@@ -1,7 +1,7 @@
-# LennardJonesFluidOnVR
+# CoarseGrainedMDonVR
 
-This is the repository for practicing Unity Scripting.
-Simple implementation of Lennard-jones fluid running on Oculus Rift.
+This is simple implementation of Coarse-grained simulation on Virtual Reality.
+Supported VR platform is Oculus Rift.
 
 ![LJFluidOnVR_1203_comp](https://user-images.githubusercontent.com/15133454/101038526-f4ad7980-35be-11eb-95d1-ca72b8aaeabf.gif)
 
