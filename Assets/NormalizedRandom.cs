@@ -14,7 +14,7 @@ public class NormalizedRandom
 
     // Genarate random number from normalized distribution
     // which specified by mean and standard deviation.
-    public float Generate(float mean, float standard_deviation)
+    public float Generate(float mean = 0.0f, float standard_deviation = 0.0f)
     {
         if (!has_stock)
         {
