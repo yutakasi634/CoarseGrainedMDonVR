@@ -7,12 +7,15 @@ using Nett;
 
 public class InitialConfGenerator : MonoBehaviour
 {
-    public LennardJonesParticle m_LJParticle;
+    public LennardJonesParticle       m_LJParticle;
 
     private float temperature = 300.0f;
     private float kb = 0.8317e-4f; // mass:Da, length:Å, time:0.01ps
     private NormalizedRandom m_NormalizedRandom;
-    private SystemManager    m_SystemManager;
+
+    private SystemManager              m_SystemManager;
+    private UnderdampedLangevinManager m_UnderdampedLangevinManager;
+
 
     // Start is called before the first frame update
     void Start()
@@ -73,6 +76,42 @@ public class InitialConfGenerator : MonoBehaviour
             }
         }
         Debug.Log("System initialization finished.");
+
+
+        // read simulator information
+        if (root.ContainsKey("simulator"))
+        {
+            TomlTable simulator = root.Get<TomlTable>("simulator");
+            if (simulator.ContainsKey("integrator"))
+            {
+                TomlTable integrator = simulator.Get<TomlTable>("integrator");
+                if (integrator.ContainsKey("type"))
+                {
+                    string integrator_type = integrator.Get<string>("type");
+                    if (integrator_type == "UnderdampedLangevin")
+                    {
+                        if (integrator.ContainsKey("gammas"))
+                        {
+                            int ljparticles_num = ljparticles.Count;
+                            List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
+                            float[]         gammas        = new float[ljparticles.Count];
+                            foreach (TomlTable gamma_table in gammas_tables)
+                            {
+                                // TODO: check dupulicate and lacking of declaration.
+                                gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
+                            }
+                            m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
+                            m_UnderdampedLangevinManager.Init(kb, temperature, ljparticles, gammas);
+                        }
+                        else
+                        {
+                            throw new System.Exception("When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
+                        }
+                    }
+                }
+            }
+        }
+
 
         List<TomlTable> ffs        = root.Get<List<TomlTable>>("forcefields");
         foreach (TomlTable ff in ffs)
