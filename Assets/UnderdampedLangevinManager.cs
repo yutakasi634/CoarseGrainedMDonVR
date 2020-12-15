@@ -38,11 +38,12 @@ public class UnderdampedLangevinManager : MonoBehaviour
         int particles_num = ljparticles.Count;
         m_LJRigidbodies = new List<Rigidbody>();
         m_NoiseCoefs    = new List<float>();
+        float invdt        = 1.0f / Time.fixedDeltaTime;
         for (int part_idx = 0; part_idx < particles_num; part_idx++)
         {
             Rigidbody ljrigid = ljparticles[part_idx].GetComponent<Rigidbody>();
             float noise_coef 
-                = Mathf.Sqrt(2.0f * m_Gammas[part_idx] * kb * temperature / ljrigid.mass);
+                = Mathf.Sqrt(2.0f * m_Gammas[part_idx] * kb * temperature * invdt / ljrigid.mass);
             m_LJRigidbodies.Add(ljrigid);
             m_NoiseCoefs.Add(noise_coef);
         }
