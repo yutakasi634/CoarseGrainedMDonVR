@@ -10,12 +10,11 @@ public class InitialConfGenerator : MonoBehaviour
     public LennardJonesParticle       m_LJParticle;
 
     private float temperature = 300.0f;
-    private float kb = 0.8317e-4f; // mass:Da, length:Å, time:0.01ps
+    private float kb = 0.19827f; // kcal/mol
     private NormalizedRandom m_NormalizedRandom;
 
     private SystemManager              m_SystemManager;
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
-
 
     // Start is called before the first frame update
     void Start()
@@ -102,6 +101,7 @@ public class InitialConfGenerator : MonoBehaviour
                             }
                             m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
                             m_UnderdampedLangevinManager.Init(kb, temperature, ljparticles, gammas);
+                            Debug.Log("UnderdampedLangevinManager initialization finished.");
                         }
                         else
                         {
