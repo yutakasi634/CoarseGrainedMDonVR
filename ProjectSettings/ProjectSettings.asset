@@ -126,8 +126,10 @@ PlayerSettings:
     Others: 1
   bundleVersion: 0.1
   preloadedAssets:
-  - {fileID: 2086984241712187822, guid: 60dbada1384931e4dbc46186a49e3367, type: 2}
-  - {fileID: 11400000, guid: d4cecffdfc8f1ea4cad22e11a0daffd9, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: -8685264104273851017, guid: 5b55053439f523b43a258f389f1b967b, type: 2}
+  - {fileID: 11400000, guid: 86030fa4162cd214ab9a9c7392581738, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -333,7 +335,7 @@ PlayerSettings:
     m_Automatic: 1
   m_BuildTargetVRSettings:
   - m_BuildTarget: Standalone
-    m_Enabled: 1
+    m_Enabled: 0
     m_Devices: []
   openGLRequireES31: 0
   openGLRequireES31AEP: 0
