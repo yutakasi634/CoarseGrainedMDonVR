@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using UnityEngine;
 
-// Random number generator for Normalized distribution based on Box-Muller's method.
+// Random number generator for Normalized distribution based on Marsaglia polar method.
 public class NormalizedRandom
 {
     private bool  has_stock;
@@ -14,22 +14,26 @@ public class NormalizedRandom
 
     // Genarate random number from normalized distribution
     // which specified by mean and standard deviation.
-    public float Generate(float mean = 0.0f, float standard_deviation = 1.0f)
+    public float Generate()
     {
         if (!has_stock)
         {
-            // TODO: avoid x and y equal 1.0 or 0.0 case by non adhock method.
-            float x = Random.Range(0.01f, 0.99f);
-            float y = Random.Range(0.01f, 0.99f);
-            float random = Mathf.Sqrt(-2.0f * Mathf.Log(x)) * Mathf.Cos(2.0f * Mathf.PI * y);
-            stock        = Mathf.Sqrt(-2.0f * Mathf.Log(x)) * Mathf.Sin(2.0f * Mathf.PI * y);
+            float u, v, s;
+            do
+            {
+                u = Random.value * 2 - 1;
+                v = Random.value * 2 - 1;
+                s = u * u + v * v;
+            } while ( s >= 1 || s == 0);
+            s = Mathf.Sqrt(-2.0f * Mathf.Log(s) / s);
+            stock = v * s;
             has_stock = true;
-            return random * standard_deviation + mean;
+            return u * s;
         }
         else
         {
             has_stock = false;
-            return stock * standard_deviation + mean;
+            return stock;
         }
     }
 }

@@ -67,9 +67,9 @@ public class InitialConfGenerator : MonoBehaviour
                 else
                 {
                     float sigma = Mathf.Sqrt(kb * temperature / new_rigid.mass);
-                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate(0.0f, sigma),
-                                                     m_NormalizedRandom.Generate(0.0f, sigma),
-                                                     m_NormalizedRandom.Generate(0.0f, sigma));
+                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate() * sigma,
+                                                     m_NormalizedRandom.Generate() * sigma,
+                                                     m_NormalizedRandom.Generate() * sigma);
                 }
                 ljparticles.Add(new_particle);
             }
