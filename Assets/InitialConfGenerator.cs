@@ -112,8 +112,9 @@ public class InitialConfGenerator : MonoBehaviour
             }
         }
 
-
+        // read forcefields information
         List<TomlTable> ffs        = root.Get<List<TomlTable>>("forcefields");
+        float max_radius = 0.0f;
         foreach (TomlTable ff in ffs)
         {
             List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
@@ -127,6 +128,10 @@ public class InitialConfGenerator : MonoBehaviour
                     int index = parameter.Get<int>("index");
                     float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
                     float radius = sigma / 2;
+                    if (max_radius < radius)
+                    {
+                        max_radius = radius;
+                    }
                     ljparticles[index].sphere_radius        = radius;
                     ljparticles[index].epsilon              = parameter.Get<float>("epsilon");
                     ljparticles[index].transform.localScale = new Vector3(sigma, sigma, sigma);
@@ -140,5 +145,9 @@ public class InitialConfGenerator : MonoBehaviour
             new Vector3(upper_boundary[0], upper_boundary[1], upper_boundary[2]),
             new Vector3(lower_boundary[0], lower_boundary[1], lower_boundary[2]));
         Debug.Log("SystemManager initialization finished.");
+
+        // Set floor position
+        GameObject floor = GameObject.Find("Floor");
+        floor.transform.position = new Vector3(0.0f, lower_boundary[1] - max_radius, 0.0f);
     }
 }
