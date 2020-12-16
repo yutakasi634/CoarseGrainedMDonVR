@@ -10,7 +10,7 @@ public class InitialConfGenerator : MonoBehaviour
     public LennardJonesParticle       m_LJParticle;
 
     private float temperature = 300.0f;
-    private float kb = 0.19827f; // kcal/mol
+    private float kb = 0.19827f; // kcal/mol,  1 tau .=. 4.9 ns
     private NormalizedRandom m_NormalizedRandom;
 
     private SystemManager              m_SystemManager;
