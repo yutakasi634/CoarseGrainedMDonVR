@@ -10,7 +10,7 @@ public class InitialConfGenerator : MonoBehaviour
     public LennardJonesParticle       m_LJParticle;
 
     private float temperature = 300.0f;
-    private float kb = 0.19827f; // kcal/mol
+    private float kb = 0.19827f; // kcal/mol,  1 tau .=. 4.9 ns
     private NormalizedRandom m_NormalizedRandom;
 
     private SystemManager              m_SystemManager;
@@ -32,7 +32,7 @@ public class InitialConfGenerator : MonoBehaviour
         List<LennardJonesParticle> ljparticles = new List<LennardJonesParticle>();
         float[] upper_boundary = new float[3];
         float[] lower_boundary = new float[3];
-        m_NormalizedRandom                     = new NormalizedRandom();
+        m_NormalizedRandom     = new NormalizedRandom();
         foreach (TomlTable system in systems)
         {
             temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
@@ -67,9 +67,9 @@ public class InitialConfGenerator : MonoBehaviour
                 else
                 {
                     float sigma = Mathf.Sqrt(kb * temperature / new_rigid.mass);
-                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate(0.0f, sigma),
-                                                     m_NormalizedRandom.Generate(0.0f, sigma),
-                                                     m_NormalizedRandom.Generate(0.0f, sigma));
+                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate() * sigma,
+                                                     m_NormalizedRandom.Generate() * sigma,
+                                                     m_NormalizedRandom.Generate() * sigma);
                 }
                 ljparticles.Add(new_particle);
             }
@@ -114,7 +114,7 @@ public class InitialConfGenerator : MonoBehaviour
 
         // read forcefields information
         List<TomlTable> ffs        = root.Get<List<TomlTable>>("forcefields");
-        float max_radius = 0.0f;
+        float           max_radius = 0.0f;
         foreach (TomlTable ff in ffs)
         {
             List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");

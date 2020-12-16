@@ -11,6 +11,11 @@ public class SystemManager : MonoBehaviour
 
     private float kinetic_ene;
 
+    private void Awake()
+    {
+        InvokeRepeating("UpdateKineticEnergy", 1.0f, 1.0f);
+    }
+
     private void FixedUpdate()
     {
         foreach (LennardJonesParticle lj_part in m_LJParticles)
@@ -35,7 +40,7 @@ public class SystemManager : MonoBehaviour
         }
     }
 
-    internal void Init (List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary)
+    internal void Init(List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary)
     {
         m_UpperBoundary = upper_boundary;
         m_LowerBoundary = lower_boundary;
@@ -50,7 +55,9 @@ public class SystemManager : MonoBehaviour
         {
             Rigidbody lj_Rigidbody = lj_part.GetComponent<Rigidbody>();
             kinetic_ene +=
-                Mathf.Pow(lj_Rigidbody.velocity.magnitude, 2.0f) * lj_Rigidbody.mass * 0.5f;
+                Mathf.Pow(lj_Rigidbody.velocity.magnitude, 2.0f) * lj_Rigidbody.mass;
         }
+        kinetic_ene *= 0.5f;
+        Debug.Log($"Kinetic energy is {kinetic_ene} kcal/mol.");
     }
 }
