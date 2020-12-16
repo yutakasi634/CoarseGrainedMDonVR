@@ -32,7 +32,7 @@ public class InitialConfGenerator : MonoBehaviour
         List<LennardJonesParticle> ljparticles = new List<LennardJonesParticle>();
         float[] upper_boundary = new float[3];
         float[] lower_boundary = new float[3];
-        m_NormalizedRandom                     = new NormalizedRandom();
+        m_NormalizedRandom     = new NormalizedRandom();
         foreach (TomlTable system in systems)
         {
             temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
@@ -112,8 +112,7 @@ public class InitialConfGenerator : MonoBehaviour
             }
         }
 
-
-        List<TomlTable> ffs        = root.Get<List<TomlTable>>("forcefields");
+        List<TomlTable> ffs = root.Get<List<TomlTable>>("forcefields");
         foreach (TomlTable ff in ffs)
         {
             List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");

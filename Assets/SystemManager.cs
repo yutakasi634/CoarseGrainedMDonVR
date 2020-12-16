@@ -35,7 +35,7 @@ public class SystemManager : MonoBehaviour
         }
     }
 
-    internal void Init (List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary)
+    internal void Init(List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary)
     {
         m_UpperBoundary = upper_boundary;
         m_LowerBoundary = lower_boundary;
