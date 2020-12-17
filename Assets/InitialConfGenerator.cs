@@ -118,57 +118,63 @@ public class InitialConfGenerator : MonoBehaviour
         float           max_radius = 0.0f;
         foreach (TomlTable ff in ffs)
         {
-            List<TomlTable> local_ffs  = ff.Get<List<TomlTable>>("local");
-            foreach (TomlTable local_ff in local_ffs)
+            if (ff.ContainsKey("local"))
             {
-                string potential = local_ff.Get<string>("potential");
-                if (potential == "Harmonic")
+                List<TomlTable> local_ffs = ff.Get<List<TomlTable>>("local");
+                foreach (TomlTable local_ff in local_ffs)
                 {
-                    var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                    var v0s           = new List<float>();
-                    var ks            = new List<float>();
-                    var ljrigid_pairs = new List<List<Rigidbody>>();
-                    foreach (TomlTable parameter in parameters)
+                    string potential = local_ff.Get<string>("potential");
+                    if (potential == "Harmonic")
                     {
-                        List<int> indices = parameter.Get<List<int>>("indices");
-                        var ljrigid1 = ljparticles[indices[0]].GetComponent<Rigidbody>();
-                        var ljrigid2 = ljparticles[indices[1]].GetComponent<Rigidbody>();
-                        ljrigid_pairs.Add(new List<Rigidbody>(){ljrigid1, ljrigid2});
-                        v0s.Add(parameter.Get<float>("v0"));
-                        ks.Add(parameter.Get<float>("k"));
-                        Assert.AreEqual(indices.Count, 2,
-                            "The length of indices must be 2.");
+                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                        var v0s = new List<float>();
+                        var ks = new List<float>();
+                        var ljrigid_pairs = new List<List<Rigidbody>>();
+                        foreach (TomlTable parameter in parameters)
+                        {
+                            List<int> indices = parameter.Get<List<int>>("indices");
+                            var ljrigid1 = ljparticles[indices[0]].GetComponent<Rigidbody>();
+                            var ljrigid2 = ljparticles[indices[1]].GetComponent<Rigidbody>();
+                            ljrigid_pairs.Add(new List<Rigidbody>() { ljrigid1, ljrigid2 });
+                            v0s.Add(parameter.Get<float>("v0"));
+                            ks.Add(parameter.Get<float>("k"));
+                            Assert.AreEqual(indices.Count, 2,
+                                "The length of indices must be 2.");
+                        }
+                        m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
+                        m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs);
+                        Debug.Log("HarmonicBondManager initialization finished.");
                     }
-                    m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
-                    m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs);
-                    Debug.Log("HarmonicBondManager initialization finished.");
-                }
-                else
-                {
-                    throw new System.Exception($@"
+                    else
+                    {
+                        throw new System.Exception($@"
                         Unknown local forcefields is specified. Available local forcefield is
                             - Harmonic");
+                    }
                 }
             }
 
-            List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
-            foreach (TomlTable global_ff in global_ffs)
+            if (ff.ContainsKey("global"))
             {
-                Assert.AreEqual("LennardJones", global_ff.Get<string>("potential"),
-                    "The potential field is only allowed \"LennardJones\". Other potential or null is here.");
-                List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
-                foreach (TomlTable parameter in parameters)
+                List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
+                foreach (TomlTable global_ff in global_ffs)
                 {
-                    int index = parameter.Get<int>("index");
-                    float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
-                    float radius = sigma / 2;
-                    if (max_radius < radius)
+                    Assert.AreEqual("LennardJones", global_ff.Get<string>("potential"),
+                        "The potential field is only allowed \"LennardJones\". Other potential or null is here.");
+                    List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
+                    foreach (TomlTable parameter in parameters)
                     {
-                        max_radius = radius;
+                        int index = parameter.Get<int>("index");
+                        float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
+                        float radius = sigma / 2;
+                        if (max_radius < radius)
+                        {
+                            max_radius = radius;
+                        }
+                        ljparticles[index].sphere_radius = radius;
+                        ljparticles[index].epsilon = parameter.Get<float>("epsilon");
+                        ljparticles[index].transform.localScale = new Vector3(sigma, sigma, sigma);
                     }
-                    ljparticles[index].sphere_radius        = radius;
-                    ljparticles[index].epsilon              = parameter.Get<float>("epsilon");
-                    ljparticles[index].transform.localScale = new Vector3(sigma, sigma, sigma);
                 }
             }
         }
