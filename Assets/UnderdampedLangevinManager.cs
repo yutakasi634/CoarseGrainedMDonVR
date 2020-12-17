@@ -28,7 +28,7 @@ public class UnderdampedLangevinManager : MonoBehaviour
         }
     }
 
-    internal void Init (float kb, float temperature,
+    internal void Init(float kb, float temperature,
         List<LennardJonesParticle> ljparticles, float[] gammas)
     {
         enabled = true;

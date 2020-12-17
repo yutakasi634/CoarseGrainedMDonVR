@@ -15,6 +15,7 @@ public class InitialConfGenerator : MonoBehaviour
 
     private SystemManager              m_SystemManager;
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
+    private HarmonicBondManager        m_HarmonicBondManager;
 
     // Start is called before the first frame update
     void Start()
@@ -117,6 +118,39 @@ public class InitialConfGenerator : MonoBehaviour
         float           max_radius = 0.0f;
         foreach (TomlTable ff in ffs)
         {
+            List<TomlTable> local_ffs  = ff.Get<List<TomlTable>>("local");
+            foreach (TomlTable local_ff in local_ffs)
+            {
+                string potential = local_ff.Get<string>("potential");
+                if (potential == "Harmonic")
+                {
+                    var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                    var v0s           = new List<float>();
+                    var ks            = new List<float>();
+                    var ljrigid_pairs = new List<List<Rigidbody>>();
+                    foreach (TomlTable parameter in parameters)
+                    {
+                        List<int> indices = parameter.Get<List<int>>("indices");
+                        var ljrigid1 = ljparticles[indices[0]].GetComponent<Rigidbody>();
+                        var ljrigid2 = ljparticles[indices[1]].GetComponent<Rigidbody>();
+                        ljrigid_pairs.Add(new List<Rigidbody>(){ljrigid1, ljrigid2});
+                        v0s.Add(parameter.Get<float>("v0"));
+                        ks.Add(parameter.Get<float>("k"));
+                        Assert.AreEqual(indices.Count, 2,
+                            "The length of indices must be 2.");
+                    }
+                    m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
+                    m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs);
+                    Debug.Log("HarmonicBondManager initialization finished.");
+                }
+                else
+                {
+                    throw new System.Exception($@"
+                        Unknown local forcefields is specified. Available local forcefield is
+                            - Harmonic");
+                }
+            }
+
             List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
             foreach (TomlTable global_ff in global_ffs)
             {
