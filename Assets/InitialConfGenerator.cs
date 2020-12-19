@@ -148,7 +148,7 @@ public class InitialConfGenerator : MonoBehaviour
                             List<int> indices = parameter.Get<List<int>>("indices");
                             var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
                             var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
-                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2});
+                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
                             Assert.AreEqual(indices.Count, 2,
@@ -162,7 +162,8 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         throw new System.Exception($@"
                         Unknown local forcefields is specified. Available local forcefield is
-                            - Harmonic");
+                            - Harmonic
+                        ");
                     }
                 }
             }
@@ -172,24 +173,53 @@ public class InitialConfGenerator : MonoBehaviour
                 List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
                 foreach (TomlTable global_ff in global_ffs)
                 {
-                    Assert.AreEqual("LennardJones", global_ff.Get<string>("potential"),
-                        "The potential field is only allowed \"LennardJones\". Other potential or null is here.");
+                    string potential = global_ff.Get<string>("potential");
                     List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
-                    foreach (TomlTable parameter in parameters)
+                    if (potential == "LennardJones")
                     {
-                        int index = parameter.Get<int>("index");
-                        float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
-                        float radius = sigma * 0.5f;
-                        if (max_radius < radius)
+                        foreach (TomlTable parameter in parameters)
                         {
-                            max_radius = radius;
+                            int index = parameter.Get<int>("index");
+                            float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
+                            float radius = sigma * 0.5f;
+                            if (max_radius < radius)
+                            {
+                                max_radius = radius;
+                            }
+                            GameObject general_particle = general_particles[index];
+                            var ljparticle
+                                = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
+                            ljparticle.sphere_radius = radius;
+                            ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
+                            ljparticle.transform.localScale = new Vector3(sigma, sigma, sigma);
                         }
-                        GameObject general_particle = general_particles[index];
-                        var ljparticle
-                            = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
-                        ljparticle.sphere_radius = radius;
-                        ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
-                        ljparticle.transform.localScale = new Vector3(sigma, sigma, sigma);
+                    }
+                    else if (potential == "ExcludedVolume")
+                    {
+                        foreach (TomlTable parameter in parameters)
+                        {
+                            int index     = parameter.Get<int>("index");
+                            float radius  = parameter.Get<float>("radius");
+                            float diameter = radius * 2.0f;
+                            if (max_radius < radius)
+                            {
+                                max_radius = radius;
+                            }
+                            GameObject general_particle = general_particles[index];
+                            var exvparticle
+                                = general_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
+                            exvparticle.sphere_radius = radius;
+                            exvparticle.scaled_epsilon = global_ff.Get<float>("epsilon") * timescale;
+                            exvparticle.transform.localScale = new Vector3(diameter, diameter, diameter);
+                        }
+                    }
+                    else
+                    {
+                        throw new System.Exception($@"
+                        Unknown global forcefields is specified. Available global forcefield is
+                            - LennardJones
+                            - ExcludedVolume
+                        ");
                     }
                 }
             }
