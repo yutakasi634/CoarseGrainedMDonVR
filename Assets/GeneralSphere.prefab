@@ -12,11 +12,10 @@ GameObject:
   - component: {fileID: 8221608063214272349}
   - component: {fileID: 8221608063214272348}
   - component: {fileID: 8221608063214272351}
-  - component: {fileID: 8221608063214272347}
   - component: {fileID: 8467348767518545566}
   - component: {fileID: 2532268009208030345}
   m_Layer: 0
-  m_Name: RigidSphere
+  m_Name: GeneralSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -96,20 +95,6 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8221608063214272347
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8221608063214272350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da4e410abe9b2574c894b8a8b2c90ceb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sphere_radius: 0.5
-  epsilon: 0.05
 --- !u!54 &8467348767518545566
 Rigidbody:
   m_ObjectHideFlags: 0
