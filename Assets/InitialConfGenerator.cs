@@ -38,17 +38,19 @@ public class InitialConfGenerator : MonoBehaviour
             throw new System.Exception($"There are {systems.Count} systems. the multiple systems case is not supported.");
         }
         List<LennardJonesParticle> ljparticles = new List<LennardJonesParticle>();
-        float[] upper_boundary = new float[3];
-        float[] lower_boundary = new float[3];
-        m_NormalizedRandom     = new NormalizedRandom();
+        Vector3 upper_boundary = new Vector3();
+        Vector3 lower_boundary = new Vector3();
+        m_NormalizedRandom = new NormalizedRandom();
         foreach (TomlTable system in systems)
         {
             temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
             if (system.ContainsKey("boundary_shape"))
             {
                 TomlTable boundary_shape = system.Get<TomlTable>("boundary_shape");
-                upper_boundary = boundary_shape.Get<float[]>("upper");
-                lower_boundary = boundary_shape.Get<float[]>("lower");
+                List<float> upper_bound_arr = boundary_shape.Get<List<float>>("upper");
+                List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
+                upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
+                lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
             }
             else
             {
