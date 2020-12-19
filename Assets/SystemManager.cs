@@ -9,6 +9,7 @@ public class SystemManager : MonoBehaviour
     private Vector3 m_LowerBoundary;
     private List<LennardJonesParticle> m_LJParticles;
 
+    private float invtimescale;
     private float kinetic_ene;
 
     private void Awake()
@@ -40,8 +41,9 @@ public class SystemManager : MonoBehaviour
         }
     }
 
-    internal void Init(List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary)
+    internal void Init(List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary, float timescale)
     {
+        invtimescale  = 1 / timescale;
         m_UpperBoundary = upper_boundary;
         m_LowerBoundary = lower_boundary;
         m_LJParticles = ljparticles;
@@ -55,7 +57,7 @@ public class SystemManager : MonoBehaviour
         {
             Rigidbody lj_Rigidbody = lj_part.GetComponent<Rigidbody>();
             kinetic_ene +=
-                Mathf.Pow(lj_Rigidbody.velocity.magnitude, 2.0f) * lj_Rigidbody.mass;
+                Mathf.Pow(lj_Rigidbody.velocity.magnitude * invtimescale, 2.0f) * lj_Rigidbody.mass;
         }
         kinetic_ene *= 0.5f;
         Debug.Log($"Kinetic energy is {kinetic_ene} kcal/mol.");

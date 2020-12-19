@@ -10,13 +10,20 @@ public class InitialConfGenerator : MonoBehaviour
     public LennardJonesParticle       m_LJParticle;
 
     private float temperature = 300.0f;
-    private float kb = 0.19827f; // kcal/mol,  1 tau .=. 4.9 ns
+    private float timescale   = 10.0f;
+    private float kb          = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
+    private float kb_scaled;
     private NormalizedRandom m_NormalizedRandom;
 
     private SystemManager              m_SystemManager;
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
     private HarmonicBondManager        m_HarmonicBondManager;
 
+    private void Awake()
+    {
+        // initialize member variables
+        kb_scaled = kb * timescale * timescale;
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -101,7 +108,7 @@ public class InitialConfGenerator : MonoBehaviour
                                 gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
                             }
                             m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
-                            m_UnderdampedLangevinManager.Init(kb, temperature, ljparticles, gammas);
+                            m_UnderdampedLangevinManager.Init(kb_scaled, temperature, ljparticles, gammas, timescale);
                             Debug.Log("UnderdampedLangevinManager initialization finished.");
                         }
                         else
@@ -142,7 +149,7 @@ public class InitialConfGenerator : MonoBehaviour
                                 "The length of indices must be 2.");
                         }
                         m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
-                        m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs);
+                        m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs, timescale);
                         Debug.Log("HarmonicBondManager initialization finished.");
                     }
                     else
@@ -181,9 +188,7 @@ public class InitialConfGenerator : MonoBehaviour
 
         // Initialize SystemManager
         m_SystemManager = GetComponent<SystemManager>();
-        m_SystemManager.Init(ljparticles,
-            new Vector3(upper_boundary[0], upper_boundary[1], upper_boundary[2]),
-            new Vector3(lower_boundary[0], lower_boundary[1], lower_boundary[2]));
+        m_SystemManager.Init(ljparticles, upper_boundary, lower_boundary, timescale);
         Debug.Log("SystemManager initialization finished.");
 
         // Set floor position
