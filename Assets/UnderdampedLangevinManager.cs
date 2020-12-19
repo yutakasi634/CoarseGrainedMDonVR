@@ -19,7 +19,7 @@ public class UnderdampedLangevinManager : MonoBehaviour
         for (int part_idx = 0; part_idx < m_LJRigidbodies.Count; part_idx++)
         {
             Rigidbody ljrigid = m_LJRigidbodies[part_idx];
-            Vector3 accelerate   = m_ScaledGammas[part_idx] * ljrigid.velocity;
+            Vector3 accelerate   = -m_ScaledGammas[part_idx] * ljrigid.velocity;
             Vector3 random_force = new Vector3(m_NormalizedRandom.Generate(),
                                                m_NormalizedRandom.Generate(),
                                                m_NormalizedRandom.Generate());
