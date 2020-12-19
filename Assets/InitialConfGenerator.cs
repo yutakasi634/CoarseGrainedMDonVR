@@ -196,5 +196,13 @@ public class InitialConfGenerator : MonoBehaviour
         // Set floor position
         GameObject floor = GameObject.Find("Floor");
         floor.transform.position = new Vector3(0.0f, lower_boundary[1] - max_radius, 0.0f);
+
+        // Set player position and scale
+        GameObject player = GameObject.Find("OVRPlayerController");
+        Vector3 box_length_half = upper_boundary - lower_boundary;
+        player.transform.position   = box_length_half + lower_boundary;
+        player.transform.localScale = new Vector3(box_length_half[1] * 0.7f,
+                                                  box_length_half[1] * 0.7f,
+                                                  box_length_half[1] * 0.7f);
     }
 }
