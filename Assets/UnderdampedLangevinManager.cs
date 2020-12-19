@@ -29,7 +29,7 @@ public class UnderdampedLangevinManager : MonoBehaviour
     }
 
     internal void Init(float kb_scaled, float temperature,
-        List<LennardJonesParticle> ljparticles, float[] gammas, float timescale)
+        List<GameObject> general_particles, float[] gammas, float timescale)
     {
         enabled = true;
         m_NormalizedRandom = new NormalizedRandom();
@@ -39,13 +39,13 @@ public class UnderdampedLangevinManager : MonoBehaviour
             m_ScaledGammas.Add(gamma * timescale);
         }
 
-        int particles_num = ljparticles.Count;
+        int particles_num = general_particles.Count;
         m_LJRigidbodies = new List<Rigidbody>();
         m_NoiseCoefs    = new List<float>();
         float invdt        = 1.0f / Time.fixedDeltaTime;
         for (int part_idx = 0; part_idx < particles_num; part_idx++)
         {
-            Rigidbody ljrigid = ljparticles[part_idx].GetComponent<Rigidbody>();
+            Rigidbody ljrigid = general_particles[part_idx].GetComponent<Rigidbody>();
             float noise_coef 
                 = Mathf.Sqrt(2.0f * m_ScaledGammas[part_idx] * kb_scaled * temperature * invdt / ljrigid.mass);
             m_LJRigidbodies.Add(ljrigid);

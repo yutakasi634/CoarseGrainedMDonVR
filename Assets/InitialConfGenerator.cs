@@ -7,7 +7,7 @@ using Nett;
 
 public class InitialConfGenerator : MonoBehaviour
 {
-    public LennardJonesParticle       m_LJParticle;
+    public GameObject m_GeneralParticle;
 
     private float temperature = 300.0f;
     private float timescale   = 10.0f;
@@ -35,9 +35,10 @@ public class InitialConfGenerator : MonoBehaviour
         List<TomlTable> systems                = root.Get<List<TomlTable>>("systems");
         if (2 <= systems.Count)
         {
-            throw new System.Exception($"There are {systems.Count} systems. the multiple systems case is not supported.");
+            throw new System.Exception(
+                $"There are {systems.Count} systems. the multiple systems case is not supported.");
         }
-        List<LennardJonesParticle> ljparticles = new List<LennardJonesParticle>();
+        List<GameObject> general_particles = new List<GameObject>();
         Vector3 upper_boundary = new Vector3();
         Vector3 lower_boundary = new Vector3();
         m_NormalizedRandom = new NormalizedRandom();
@@ -54,15 +55,16 @@ public class InitialConfGenerator : MonoBehaviour
             }
             else
             {
-                throw new System.Exception("There is no boundary_shape information. UnlimitedBoundary is not supported now.");
+                throw new System.Exception(
+                    "There is no boundary_shape information. UnlimitedBoundary is not supported now.");
             }
             List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
             foreach (TomlTable particle_info in particles)
             {
                 // initialize particle position
                 float[] position = particle_info.Get<float[]>("pos");
-                LennardJonesParticle new_particle =
-                    Instantiate(m_LJParticle,
+                GameObject new_particle =
+                    Instantiate(m_GeneralParticle,
                                 new Vector3(position[0], position[1], position[2]),
                                 transform.rotation);
 
@@ -81,7 +83,7 @@ public class InitialConfGenerator : MonoBehaviour
                                                      m_NormalizedRandom.Generate() * sigma,
                                                      m_NormalizedRandom.Generate() * sigma);
                 }
-                ljparticles.Add(new_particle);
+                general_particles.Add(new_particle);
             }
         }
         Debug.Log("System initialization finished.");
@@ -101,21 +103,23 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         if (integrator.ContainsKey("gammas"))
                         {
-                            int ljparticles_num = ljparticles.Count;
+                            int general_particles_num = general_particles.Count;
                             List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
-                            float[]         gammas        = new float[ljparticles.Count];
+                            float[]         gammas        = new float[general_particles.Count];
                             foreach (TomlTable gamma_table in gammas_tables)
                             {
                                 // TODO: check dupulicate and lacking of declaration.
                                 gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
                             }
                             m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
-                            m_UnderdampedLangevinManager.Init(kb_scaled, temperature, ljparticles, gammas, timescale);
+                            m_UnderdampedLangevinManager.Init(
+                                kb_scaled, temperature, general_particles, gammas, timescale);
                             Debug.Log("UnderdampedLangevinManager initialization finished.");
                         }
                         else
                         {
-                            throw new System.Exception("When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
+                            throw new System.Exception(
+                                "When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
                         }
                     }
                 }
@@ -138,20 +142,20 @@ public class InitialConfGenerator : MonoBehaviour
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
                         var ks = new List<float>();
-                        var ljrigid_pairs = new List<List<Rigidbody>>();
+                        var rigid_pairs = new List<List<Rigidbody>>();
                         foreach (TomlTable parameter in parameters)
                         {
                             List<int> indices = parameter.Get<List<int>>("indices");
-                            var ljrigid1 = ljparticles[indices[0]].GetComponent<Rigidbody>();
-                            var ljrigid2 = ljparticles[indices[1]].GetComponent<Rigidbody>();
-                            ljrigid_pairs.Add(new List<Rigidbody>() { ljrigid1, ljrigid2 });
+                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2});
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
                             Assert.AreEqual(indices.Count, 2,
                                 "The length of indices must be 2.");
                         }
                         m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
-                        m_HarmonicBondManager.Init(v0s, ks, ljrigid_pairs, timescale);
+                        m_HarmonicBondManager.Init(v0s, ks, rigid_pairs, timescale);
                         Debug.Log("HarmonicBondManager initialization finished.");
                     }
                     else
@@ -175,14 +179,17 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         int index = parameter.Get<int>("index");
                         float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
-                        float radius = sigma / 2;
+                        float radius = sigma * 0.5f;
                         if (max_radius < radius)
                         {
                             max_radius = radius;
                         }
-                        ljparticles[index].sphere_radius = radius;
-                        ljparticles[index].scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
-                        ljparticles[index].transform.localScale = new Vector3(sigma, sigma, sigma);
+                        GameObject general_particle = general_particles[index];
+                        var ljparticle
+                            = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
+                        ljparticle.sphere_radius = radius;
+                        ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
+                        ljparticle.transform.localScale = new Vector3(sigma, sigma, sigma);
                     }
                 }
             }
@@ -190,7 +197,7 @@ public class InitialConfGenerator : MonoBehaviour
 
         // Initialize SystemManager
         m_SystemManager = GetComponent<SystemManager>();
-        m_SystemManager.Init(ljparticles, upper_boundary, lower_boundary, timescale);
+        m_SystemManager.Init(general_particles, upper_boundary, lower_boundary, timescale);
         Debug.Log("SystemManager initialization finished.");
 
         // Set floor position

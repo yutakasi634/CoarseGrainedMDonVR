@@ -7,7 +7,7 @@ public class SystemManager : MonoBehaviour
 {
     private Vector3 m_UpperBoundary;
     private Vector3 m_LowerBoundary;
-    private List<LennardJonesParticle> m_LJParticles;
+    private List<GameObject> m_GeneralParticles;
 
     private float invtimescale;
     private float kinetic_ene;
@@ -19,7 +19,7 @@ public class SystemManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        foreach (LennardJonesParticle lj_part in m_LJParticles)
+        foreach (GameObject lj_part in m_GeneralParticles)
         {
             // fix by Reflecting Boundary Condition
             Rigidbody lj_rigid = lj_part.GetComponent<Rigidbody>();
@@ -41,23 +41,24 @@ public class SystemManager : MonoBehaviour
         }
     }
 
-    internal void Init(List<LennardJonesParticle> ljparticles, Vector3 upper_boundary, Vector3 lower_boundary, float timescale)
+    internal void Init(List<GameObject> general_particles,
+        Vector3 upper_boundary, Vector3 lower_boundary, float timescale)
     {
         invtimescale  = 1 / timescale;
         m_UpperBoundary = upper_boundary;
         m_LowerBoundary = lower_boundary;
-        m_LJParticles = ljparticles;
+        m_GeneralParticles = general_particles;
         UpdateKineticEnergy();
     }
 
     internal void UpdateKineticEnergy()
     {
         kinetic_ene = 0.0f;
-        foreach (LennardJonesParticle lj_part in m_LJParticles)
+        foreach (GameObject gen_part in m_GeneralParticles)
         {
-            Rigidbody lj_Rigidbody = lj_part.GetComponent<Rigidbody>();
+            Rigidbody gen_Rigidbody = gen_part.GetComponent<Rigidbody>();
             kinetic_ene +=
-                Mathf.Pow(lj_Rigidbody.velocity.magnitude * invtimescale, 2.0f) * lj_Rigidbody.mass;
+                Mathf.Pow(gen_Rigidbody.velocity.magnitude * invtimescale, 2.0f) * gen_Rigidbody.mass;
         }
         kinetic_ene *= 0.5f;
         Debug.Log($"Kinetic energy is {kinetic_ene} kcal/mol.");
