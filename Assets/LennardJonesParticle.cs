@@ -4,14 +4,14 @@ using UnityEngine.Assertions;
 
 public class LennardJonesParticle : MonoBehaviour
 {
-    public float sphere_radius = 0.5f;
-    public float epsilon       = 0.05f;
+    public float sphere_radius  = 0.5f;
+    public float scaled_epsilon = 0.05f;
 
     private Rigidbody      m_Rigidbody;
     private SphereCollider m_SphereCollider;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         m_Rigidbody       = GetComponent<Rigidbody>();
         m_SphereCollider  = GetComponent<SphereCollider>();
@@ -24,7 +24,7 @@ public class LennardJonesParticle : MonoBehaviour
         m_SphereCollider.isTrigger = true;
     }
 
-    void OnTriggerStay(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         LennardJonesParticle other_lj = other.GetComponent<LennardJonesParticle>();
         if (other_lj == null)
@@ -34,6 +34,7 @@ public class LennardJonesParticle : MonoBehaviour
 
         Vector3 dist_vec = other.attachedRigidbody.position - transform.position;
         float sigma      = sphere_radius + other_lj.sphere_radius;
+        float epsilon    = Mathf.Sqrt(scaled_epsilon * other_lj.scaled_epsilon);
         float rinv       = 1.0f / dist_vec.magnitude;
         float r1s1       = sigma * rinv;
         float r3s3       = r1s1 * r1s1* r1s1;

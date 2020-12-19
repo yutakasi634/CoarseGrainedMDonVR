@@ -181,7 +181,7 @@ public class InitialConfGenerator : MonoBehaviour
                             max_radius = radius;
                         }
                         ljparticles[index].sphere_radius = radius;
-                        ljparticles[index].epsilon = parameter.Get<float>("epsilon");
+                        ljparticles[index].scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
                         ljparticles[index].transform.localScale = new Vector3(sigma, sigma, sigma);
                     }
                 }
