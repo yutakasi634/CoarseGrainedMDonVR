@@ -222,15 +222,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 93417538, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
-      propertyPath: SystemMonitorPanel
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 93417539, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
-      propertyPath: m_GeneralParticle
-      value: 
-      objectReference: {fileID: 8221608063214272350, guid: 7b2653e1b49c93946866da3cf1343658,
-        type: 3}
     - target: {fileID: 8036251953374215869, guid: ab4a06b7874f8df429fe0c02744fbb66,
         type: 3}
       propertyPath: m_RootOrder
@@ -293,36 +284,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
---- !u!1 &162132384 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8234603261816765633, guid: ab4a06b7874f8df429fe0c02744fbb66,
-    type: 3}
-  m_PrefabInstance: {fileID: 162132383}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &162132385
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 162132384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da55b9ff8d34846b2bda39049c051f02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &162132386
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 162132384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c55315bb96d2b547b4ded659999f854, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &181831002 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4188412984752900, guid: ce816f2e6abb0504092c23ed9b970dfd,
