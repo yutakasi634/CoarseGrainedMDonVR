@@ -44,7 +44,7 @@ public class LennardJonesParticle : MonoBehaviour
         Assert.IsFalse(m_Rigidbody.useGravity, "LJParticle should have false useGravity flag.");
 
         // This radius mean cutoff radius
-        m_SphereCollider.radius = 2.5f * sphere_radius;
+        m_SphereCollider.radius = 2.5f * 0.5f; // relative value to Scale of Transform
         m_SphereCollider.isTrigger = true;
     }
 };
