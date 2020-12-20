@@ -10,8 +10,8 @@ public class InitialConfGenerator : MonoBehaviour
     public GameObject m_GeneralParticle;
 
     private float temperature = 300.0f;
-    private float timescale   = 10.0f;
-    private float kb          = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
+    private float timescale = 10.0f;
+    private float kb = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
     private float kb_scaled;
     private NormalizedRandom m_NormalizedRandom;
 
@@ -108,7 +108,7 @@ public class InitialConfGenerator : MonoBehaviour
                         {
                             int general_particles_num = general_particles.Count;
                             List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
-                            float[]         gammas        = new float[general_particles.Count];
+                            float[] gammas = new float[general_particles.Count];
                             foreach (TomlTable gamma_table in gammas_tables)
                             {
                                 // TODO: check dupulicate and lacking of declaration.
@@ -130,8 +130,8 @@ public class InitialConfGenerator : MonoBehaviour
         }
 
         // read forcefields information
-        List<TomlTable> ffs        = root.Get<List<TomlTable>>("forcefields");
-        float           max_radius = 0.0f;
+        List<TomlTable> ffs = root.Get<List<TomlTable>>("forcefields");
+        float max_radius = 0.0f;
         foreach (TomlTable ff in ffs)
         {
             if (ff.ContainsKey("local"))
@@ -144,7 +144,7 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
-                        var ks = new List<float>();
+                        var ks  = new List<float>();
                         var rigid_pairs = new List<List<Rigidbody>>();
                         foreach (TomlTable parameter in parameters)
                         {
@@ -222,7 +222,7 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         foreach (TomlTable parameter in parameters)
                         {
-                            int index    = parameter.Get<int>("index");
+                            int index = parameter.Get<int>("index");
                             float radius = parameter.Get<float>("radius");
                             if (max_radius < radius)
                             {
@@ -232,7 +232,7 @@ public class InitialConfGenerator : MonoBehaviour
                             var exvparticle
                                 = general_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
                             exvparticle.sphere_radius = radius;
-                            exvparticle.Init(radius , global_ff.Get<float>("epsilon"), timescale);
+                            exvparticle.Init(radius, global_ff.Get<float>("epsilon"), timescale);
                         }
                         Debug.Log("ExcludedVolume initialization finished.");
                     }

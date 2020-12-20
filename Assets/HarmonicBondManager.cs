@@ -19,14 +19,14 @@ public class HarmonicBondManager : MonoBehaviour
     {
         for (int pair_idx = 0; pair_idx < m_RigidPairs.Count; pair_idx++)
         {
-            List<Rigidbody> ljrigid_pair = m_RigidPairs[pair_idx];
-            Rigidbody ljrigid_first  = ljrigid_pair[0];
-            Rigidbody ljrigid_second = ljrigid_pair[1];
-            Vector3 dist_vec = ljrigid_second.position - ljrigid_first.position;
+            List<Rigidbody> rigid_pair = m_RigidPairs[pair_idx];
+            Rigidbody rigid_first  = rigid_pair[0];
+            Rigidbody rigid_second = rigid_pair[1];
+            Vector3 dist_vec = rigid_second.position - rigid_first.position;
             Vector3 norm_vec = dist_vec.normalized;
             float   coef     = 2.0f * m_ScaledKs[pair_idx] * (dist_vec.magnitude - m_V0s[pair_idx]);
-            ljrigid_first.AddForce(coef * norm_vec);
-            ljrigid_second.AddForce(-coef * norm_vec);
+            rigid_first.AddForce(coef * norm_vec);
+            rigid_second.AddForce(-coef * norm_vec);
         }
     }
 
