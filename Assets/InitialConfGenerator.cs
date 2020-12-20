@@ -161,11 +161,16 @@ public class InitialConfGenerator : MonoBehaviour
                         m_HarmonicBondManager.Init(v0s, ks, rigid_pairs, timescale);
                         Debug.Log("HarmonicBondManager initialization finished.");
                     }
+                    else if (potential == "GoContact")
+                    {
+                        Debug.Log("Now implementing ...");
+                    }
                     else
                     {
                         throw new System.Exception($@"
                         Unknown local forcefields is specified. Available local forcefield is
                             - Harmonic
+                            - GoContact
                         ");
                     }
                 }
