@@ -24,6 +24,7 @@ public class InitialConfGenerator : MonoBehaviour
     {
         // initialize member variables
         kb_scaled = kb * timescale * timescale;
+        m_NormalizedRandom = new NormalizedRandom();
     }
     // Start is called before the first frame update
     void Start()
