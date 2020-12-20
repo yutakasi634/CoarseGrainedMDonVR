@@ -27,7 +27,7 @@ public class ExcludedVolumeParticle : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         ExcludedVolumeParticle other_exv = other.GetComponent<ExcludedVolumeParticle>();
-        if (other_exv = null)
+        if (other_exv == null)
         {
             return;
         }
