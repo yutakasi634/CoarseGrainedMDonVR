@@ -197,11 +197,9 @@ public class InitialConfGenerator : MonoBehaviour
                             GameObject general_particle = general_particles[index];
                             var ljparticle
                                 = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
-                            ljparticle.sphere_radius = radius;
-                            ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale * timescale;
-                            ljparticle.transform.localScale = new Vector3(sigma, sigma, sigma);
-                            Debug.Log("LennardJones initialization finished.");
+                            ljparticle.Init(radius, parameter.Get<float>("epsilon"), timescale);
                         }
+                        Debug.Log("LennardJones initialization finished.");
                     }
                     else if (potential == "ExcludedVolume")
                     {

@@ -10,20 +10,6 @@ public class LennardJonesParticle : MonoBehaviour
     private Rigidbody      m_Rigidbody;
     private SphereCollider m_SphereCollider;
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        m_Rigidbody       = GetComponent<Rigidbody>();
-        m_SphereCollider  = GetComponent<SphereCollider>();
-
-        // Check no gravity apply to this particle
-        Assert.IsFalse(m_Rigidbody.useGravity, "LJParticle should have false useGravity flag.");
-
-        // This radius mean cutoff radius
-        m_SphereCollider.radius    = 2.5f * sphere_radius;
-        m_SphereCollider.isTrigger = true;
-    }
-
     private void OnTriggerStay(Collider other)
     {
         LennardJonesParticle other_lj = other.GetComponent<LennardJonesParticle>();
@@ -42,5 +28,23 @@ public class LennardJonesParticle : MonoBehaviour
         float r12s12     = r6s6 * r6s6;
         float derivative = 24.0f * epsilon * (r6s6 - 2.0f * r12s12) * rinv;
         m_Rigidbody.AddForce(derivative * rinv * dist_vec);
+    }
+
+    internal void Init(float radius, float epsilon, float timescale)
+    {
+        sphere_radius  = radius;
+        scaled_epsilon = epsilon * timescale * timescale;
+        float diameter = radius * 2.0f;
+        transform.localScale = new Vector3(diameter, diameter, diameter);
+
+        m_Rigidbody = GetComponent<Rigidbody>();
+        m_SphereCollider = GetComponent<SphereCollider>();
+
+        // Check no gravity apply to this particle
+        Assert.IsFalse(m_Rigidbody.useGravity, "LJParticle should have false useGravity flag.");
+
+        // This radius mean cutoff radius
+        m_SphereCollider.radius = 2.5f * sphere_radius;
+        m_SphereCollider.isTrigger = true;
     }
 };
