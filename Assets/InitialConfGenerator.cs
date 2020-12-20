@@ -19,6 +19,7 @@ public class InitialConfGenerator : MonoBehaviour
     private ReflectingBoundaryManager  m_ReflectingBoundaryManager;
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
     private HarmonicBondManager        m_HarmonicBondManager;
+    private GoContactManager           m_GoContactManager;
 
     private void Awake()
     {
@@ -162,7 +163,24 @@ public class InitialConfGenerator : MonoBehaviour
                     }
                     else if (potential == "GoContact")
                     {
-                        Debug.Log("Now implementing ...");
+                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                        var v0s = new List<float>();
+                        var ks  = new List<float>();
+                        var rigid_pairs = new List<List<Rigidbody>>();
+                        foreach (TomlTable parameter in parameters)
+                        {
+                            List<int> indices = parameter.Get<List<int>>("indices");
+                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
+                            v0s.Add(parameter.Get<float>("v0"));
+                            ks.Add(parameter.Get<float>("k"));
+                            Assert.AreEqual(indices.Count, 2,
+                                "The length of indices must be 2.");
+                        }
+                        m_GoContactManager = GetComponent<GoContactManager>();
+                        m_GoContactManager.Init(v0s, ks, rigid_pairs, timescale);
+                        Debug.Log("GoContactManager initialization finished.");
                     }
                     else
                     {
