@@ -190,8 +190,9 @@ public class InitialConfGenerator : MonoBehaviour
                             var ljparticle
                                 = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
                             ljparticle.sphere_radius = radius;
-                            ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale;
+                            ljparticle.scaled_epsilon = parameter.Get<float>("epsilon") * timescale * timescale;
                             ljparticle.transform.localScale = new Vector3(sigma, sigma, sigma);
+                            Debug.Log("LennardJones initialization finished.");
                         }
                     }
                     else if (potential == "ExcludedVolume")
@@ -209,8 +210,9 @@ public class InitialConfGenerator : MonoBehaviour
                             var exvparticle
                                 = general_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
                             exvparticle.sphere_radius = radius;
-                            exvparticle.scaled_epsilon = global_ff.Get<float>("epsilon") * timescale;
+                            exvparticle.scaled_epsilon = global_ff.Get<float>("epsilon") * timescale * timescale;
                             exvparticle.transform.localScale = new Vector3(diameter, diameter, diameter);
+                            Debug.Log("ExcludedVolume initialization finished.");
                         }
                     }
                     else
