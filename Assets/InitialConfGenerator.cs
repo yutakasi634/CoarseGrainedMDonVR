@@ -41,8 +41,6 @@ public class InitialConfGenerator : MonoBehaviour
         }
 
         List<GameObject> general_particles = new List<GameObject>();
-        Vector3 upper_boundary = new Vector3();
-        Vector3 lower_boundary = new Vector3();
         m_NormalizedRandom = new NormalizedRandom();
 
         TomlTable system = systems[0];
@@ -78,6 +76,9 @@ public class InitialConfGenerator : MonoBehaviour
         }
 
         // read boundary_shape information
+        // if there is no boundary_shape key in system table, Unlimitedboundary will be select.
+        Vector3 upper_boundary = new Vector3();
+        Vector3 lower_boundary = new Vector3();
         if (system.ContainsKey("boundary_shape"))
         {
             TomlTable boundary_shape = system.Get<TomlTable>("boundary_shape");
@@ -88,12 +89,6 @@ public class InitialConfGenerator : MonoBehaviour
             m_ReflectingBoundaryManager = GetComponent<ReflectingBoundaryManager>();
             m_ReflectingBoundaryManager.Init(general_particles, upper_boundary, lower_boundary);
         }
-        else
-        {
-            throw new System.Exception(
-                "There is no boundary_shape information. UnlimitedBoundary is not supported now.");
-        }
-
         Debug.Log("System initialization finished.");
 
 
@@ -238,16 +233,19 @@ public class InitialConfGenerator : MonoBehaviour
         m_SystemObserver.Init(general_particles, timescale);
         Debug.Log("SystemObserver initialization finished.");
 
-        // Set floor position
-        GameObject floor = GameObject.Find("Floor");
-        floor.transform.position = new Vector3(0.0f, lower_boundary[1] - max_radius, 0.0f);
+        if (system.ContainsKey("boundary_shape"))
+        {
+            // Set floor position based on box
+            GameObject floor = GameObject.Find("Floor");
+            floor.transform.position = new Vector3(0.0f, lower_boundary[1] - max_radius, 0.0f);
 
-        // Set player position and scale
-        GameObject player = GameObject.Find("OVRPlayerController");
-        Vector3 box_length_half = upper_boundary - lower_boundary;
-        player.transform.position   = box_length_half + lower_boundary;
-        player.transform.localScale = new Vector3(box_length_half[1] * 0.7f,
-                                                  box_length_half[1] * 0.7f,
-                                                  box_length_half[1] * 0.7f);
+            // Set player position and scale based on box
+            GameObject player = GameObject.Find("OVRPlayerController");
+            Vector3 box_length_half = upper_boundary - lower_boundary;
+            player.transform.position = box_length_half + lower_boundary;
+            player.transform.localScale = new Vector3(box_length_half[1] * 0.7f,
+                                                      box_length_half[1] * 0.7f,
+                                                      box_length_half[1] * 0.7f);
+        }
     }
 }
