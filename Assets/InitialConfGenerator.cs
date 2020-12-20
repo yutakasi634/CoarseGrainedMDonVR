@@ -209,7 +209,6 @@ public class InitialConfGenerator : MonoBehaviour
                         {
                             int index    = parameter.Get<int>("index");
                             float radius = parameter.Get<float>("radius");
-                            float diameter = radius * 2.0f;
                             if (max_radius < radius)
                             {
                                 max_radius = radius;
@@ -218,10 +217,9 @@ public class InitialConfGenerator : MonoBehaviour
                             var exvparticle
                                 = general_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
                             exvparticle.sphere_radius = radius;
-                            exvparticle.scaled_epsilon = global_ff.Get<float>("epsilon") * timescale * timescale;
-                            exvparticle.transform.localScale = new Vector3(diameter, diameter, diameter);
-                            Debug.Log("ExcludedVolume initialization finished.");
+                            exvparticle.Init(radius , global_ff.Get<float>("epsilon"), timescale);
                         }
+                        Debug.Log("ExcludedVolume initialization finished.");
                     }
                     else
                     {

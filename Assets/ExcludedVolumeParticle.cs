@@ -10,20 +10,6 @@ public class ExcludedVolumeParticle : MonoBehaviour
     private Rigidbody      m_Rigidbody;
     private SphereCollider m_SphereCollider;
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        m_Rigidbody      = GetComponent<Rigidbody>();
-        m_SphereCollider = GetComponent<SphereCollider>();
-
-        // Check no gravity apply to this particle
-        Assert.IsFalse(m_Rigidbody.useGravity, "ExvParticle should have false userGravity flag.");
-
-        // This radius mean cutoff radius
-        m_SphereCollider.radius    = 2.0f * sphere_radius;
-        m_SphereCollider.isTrigger = true;
-    }
-
     private void OnTriggerStay(Collider other)
     {
         ExcludedVolumeParticle other_exv = other.GetComponent<ExcludedVolumeParticle>();
@@ -41,5 +27,23 @@ public class ExcludedVolumeParticle : MonoBehaviour
         float dr6     = dr3 * dr3;
         float dr12    = dr6 * dr6;
         m_Rigidbody.AddForce(-12.0f * epsilon * dr12 * rinv * rinv * dist_vec);
+    }
+
+    internal void Init(float radius, float epsilon, float timescale)
+    {
+        sphere_radius  = radius;
+        scaled_epsilon = epsilon * timescale * timescale;
+        float diameter = radius * 2.0f;
+        transform.localScale = new Vector3(diameter, diameter, diameter);
+
+        m_Rigidbody = GetComponent<Rigidbody>();
+        m_SphereCollider = GetComponent<SphereCollider>();
+
+        // Check no gravity apply to this particle
+        Assert.IsFalse(m_Rigidbody.useGravity, "ExvParticle should have false userGravity flag.");
+
+        // This radius mean cutoff radius
+        m_SphereCollider.radius = 2.0f * sphere_radius;
+        m_SphereCollider.isTrigger = true;
     }
 }
