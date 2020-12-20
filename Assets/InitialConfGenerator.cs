@@ -15,7 +15,8 @@ public class InitialConfGenerator : MonoBehaviour
     private float kb_scaled;
     private NormalizedRandom m_NormalizedRandom;
 
-    private SystemManager              m_SystemManager;
+    private SystemObserver             m_SystemObserver;
+    private ReflectingBoundaryManager  m_ReflectingBoundaryManager;
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
     private HarmonicBondManager        m_HarmonicBondManager;
 
@@ -28,64 +29,71 @@ public class InitialConfGenerator : MonoBehaviour
     void Start()
     {
         // read input file
-        string input_file_path = Application.dataPath + "/../input/input_test.toml";
+        string input_file_path = Application.dataPath + "/../input/input.toml";
         TomlTable root = Toml.ReadFile(input_file_path);
 
         // generate initial particle position, velocity and system temperature
-        List<TomlTable> systems                = root.Get<List<TomlTable>>("systems");
+        List<TomlTable> systems = root.Get<List<TomlTable>>("systems");
         if (2 <= systems.Count)
         {
             throw new System.Exception(
                 $"There are {systems.Count} systems. the multiple systems case is not supported.");
         }
+
         List<GameObject> general_particles = new List<GameObject>();
         Vector3 upper_boundary = new Vector3();
         Vector3 lower_boundary = new Vector3();
         m_NormalizedRandom = new NormalizedRandom();
-        foreach (TomlTable system in systems)
+
+        TomlTable system = systems[0];
+        temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
+
+        // read particles information
+        List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
+        foreach (TomlTable particle_info in particles)
         {
-            temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
-            if (system.ContainsKey("boundary_shape"))
+            // initialize particle position
+            float[] position = particle_info.Get<float[]>("pos");
+            GameObject new_particle =
+                Instantiate(m_GeneralParticle,
+                            new Vector3(position[0], position[1], position[2]),
+                            transform.rotation);
+
+            // initialize particle velocity
+            Rigidbody new_rigid = new_particle.GetComponent<Rigidbody>();
+            new_rigid.mass = particle_info.Get<float>("m");
+            if (particle_info.ContainsKey("vel"))
             {
-                TomlTable boundary_shape = system.Get<TomlTable>("boundary_shape");
-                List<float> upper_bound_arr = boundary_shape.Get<List<float>>("upper");
-                List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
-                upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
-                lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
+                float[] velocity = particle_info.Get<float[]>("vel");
+                new_rigid.velocity = new Vector3(velocity[0], velocity[1], velocity[2]);
             }
             else
             {
-                throw new System.Exception(
-                    "There is no boundary_shape information. UnlimitedBoundary is not supported now.");
+                float sigma = Mathf.Sqrt(kb * temperature / new_rigid.mass);
+                new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate() * sigma,
+                                                 m_NormalizedRandom.Generate() * sigma,
+                                                 m_NormalizedRandom.Generate() * sigma);
             }
-            List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
-            foreach (TomlTable particle_info in particles)
-            {
-                // initialize particle position
-                float[] position = particle_info.Get<float[]>("pos");
-                GameObject new_particle =
-                    Instantiate(m_GeneralParticle,
-                                new Vector3(position[0], position[1], position[2]),
-                                transform.rotation);
-
-                // initialize particle velocity
-                Rigidbody new_rigid = new_particle.GetComponent<Rigidbody>();
-                new_rigid.mass = particle_info.Get<float>("m");
-                if (particle_info.ContainsKey("vel"))
-                {
-                    float[] velocity = particle_info.Get<float[]>("vel");
-                    new_rigid.velocity = new Vector3(velocity[0], velocity[1], velocity[2]);
-                }
-                else
-                {
-                    float sigma = Mathf.Sqrt(kb * temperature / new_rigid.mass);
-                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate() * sigma,
-                                                     m_NormalizedRandom.Generate() * sigma,
-                                                     m_NormalizedRandom.Generate() * sigma);
-                }
-                general_particles.Add(new_particle);
-            }
+            general_particles.Add(new_particle);
         }
+
+        // read boundary_shape information
+        if (system.ContainsKey("boundary_shape"))
+        {
+            TomlTable boundary_shape = system.Get<TomlTable>("boundary_shape");
+            List<float> upper_bound_arr = boundary_shape.Get<List<float>>("upper");
+            List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
+            upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
+            lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
+            m_ReflectingBoundaryManager = GetComponent<ReflectingBoundaryManager>();
+            m_ReflectingBoundaryManager.Init(general_particles, upper_boundary, lower_boundary);
+        }
+        else
+        {
+            throw new System.Exception(
+                "There is no boundary_shape information. UnlimitedBoundary is not supported now.");
+        }
+
         Debug.Log("System initialization finished.");
 
 
@@ -199,8 +207,8 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         foreach (TomlTable parameter in parameters)
                         {
-                            int index     = parameter.Get<int>("index");
-                            float radius  = parameter.Get<float>("radius");
+                            int index    = parameter.Get<int>("index");
+                            float radius = parameter.Get<float>("radius");
                             float diameter = radius * 2.0f;
                             if (max_radius < radius)
                             {
@@ -227,10 +235,10 @@ public class InitialConfGenerator : MonoBehaviour
             }
         }
 
-        // Initialize SystemManager
-        m_SystemManager = GetComponent<SystemManager>();
-        m_SystemManager.Init(general_particles, upper_boundary, lower_boundary, timescale);
-        Debug.Log("SystemManager initialization finished.");
+        // Initialize SystemObserver
+        m_SystemObserver = GetComponent<SystemObserver>();
+        m_SystemObserver.Init(general_particles, timescale);
+        Debug.Log("SystemObserver initialization finished.");
 
         // Set floor position
         GameObject floor = GameObject.Find("Floor");
