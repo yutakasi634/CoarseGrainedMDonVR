@@ -41,14 +41,12 @@ public class InitialConfGenerator : MonoBehaviour
                 $"There are {systems.Count} systems. the multiple systems case is not supported.");
         }
 
-        List<GameObject> general_particles = new List<GameObject>();
-        m_NormalizedRandom = new NormalizedRandom();
-
         TomlTable system = systems[0];
         temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
 
         // read particles information
         List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
+        List<GameObject> general_particles = new List<GameObject>();
         foreach (TomlTable particle_info in particles)
         {
             // initialize particle position
@@ -237,19 +235,62 @@ public class InitialConfGenerator : MonoBehaviour
         m_SystemObserver.Init(general_particles, timescale);
         Debug.Log("SystemObserver initialization finished.");
 
+        // Set Floor and Player position
+        GameObject floor = GameObject.Find("Floor");
+        GameObject player = GameObject.Find("OVRPlayerController");
         if (system.ContainsKey("boundary_shape"))
         {
-            // Set floor position based on box
-            GameObject floor = GameObject.Find("Floor");
-            floor.transform.position = new Vector3(0.0f, lower_boundary[1] - max_radius, 0.0f);
-
-            // Set player position and scale based on box
-            GameObject player = GameObject.Find("OVRPlayerController");
             Vector3 box_length_half = upper_boundary - lower_boundary;
-            player.transform.position = box_length_half + lower_boundary;
-            player.transform.localScale = new Vector3(box_length_half[1] * 0.7f,
-                                                      box_length_half[1] * 0.7f,
-                                                      box_length_half[1] * 0.7f);
+            Vector3 box_center      = box_length_half + lower_boundary;
+            floor.transform.position    = new Vector3(box_center.x,
+                                                      lower_boundary.y - max_radius,
+                                                      box_center.z);
+            player.transform.position   = new Vector3(box_center.x,
+                                                      box_center.y,
+                                                      lower_boundary.z - box_length_half.z);
         }
+        else
+        {
+            Vector3 upper_edge = detect_upper_edge(general_particles);
+            Vector3 lower_edge = detect_lower_edge(general_particles);
+            Vector3 pseudo_box_center      = (upper_edge + lower_edge) * 0.5f;
+            Vector3 pseudo_box_length_half = (upper_edge - lower_edge) * 0.5f;
+            upper_boundary = upper_edge + pseudo_box_length_half;
+            lower_boundary = lower_edge - pseudo_box_length_half;
+            floor.transform.position  = new Vector3(pseudo_box_center.x,
+                                                    lower_boundary.y,
+                                                    pseudo_box_center.z);
+            player.transform.position = new Vector3(pseudo_box_center.x,
+                                                    pseudo_box_center.y,
+                                                    lower_boundary.z - pseudo_box_length_half.z);
+        }
+    }
+
+    private Vector3 detect_upper_edge(List<GameObject> general_particles)
+    {
+        var ret_vec = new Vector3(0.0f, 0.0f, 0.0f);
+        foreach (GameObject gen_part in general_particles)
+        {
+            Vector3 coord = gen_part.GetComponent<Rigidbody>().position;
+            for(int idx = 0; idx < 3; idx++)
+            {
+                if (ret_vec[idx] < coord[idx]) { ret_vec[idx] = coord[idx]; }
+            }
+        }
+        return ret_vec;
+    }
+
+    private Vector3 detect_lower_edge(List<GameObject> general_particles)
+    {
+        var ret_vec = new Vector3(0.0f, 0.0f, 0.0f);
+        foreach (GameObject gen_part in general_particles)
+        {
+            Vector3 coord = gen_part.GetComponent<Rigidbody>().position;
+            for (int idx = 0; idx < 3; idx++)
+            {
+                if (coord[idx] < ret_vec[idx]) { ret_vec[idx] = coord[idx]; }
+            }
+        }
+        return ret_vec;
     }
 }
