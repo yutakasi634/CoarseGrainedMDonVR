@@ -275,12 +275,15 @@ public class InitialConfGenerator : MonoBehaviour
             Vector3 pseudo_box_length_half = (upper_edge - lower_edge) * 0.5f;
             upper_boundary = upper_edge + pseudo_box_length_half;
             lower_boundary = lower_edge - pseudo_box_length_half;
-            floor.transform.position  = new Vector3(pseudo_box_center.x,
+            floor.transform.position    = new Vector3(pseudo_box_center.x,
                                                     lower_boundary.y,
                                                     pseudo_box_center.z);
-            player.transform.position = new Vector3(pseudo_box_center.x,
-                                                    pseudo_box_center.y,
+            player.transform.position   = new Vector3(pseudo_box_center.x,
+                                                    upper_boundary.y,
                                                     lower_boundary.z - pseudo_box_length_half.z);
+            player.transform.localScale = new Vector3(upper_boundary.y,
+                                                      upper_boundary.y,
+                                                      upper_boundary.y);
         }
     }
 
