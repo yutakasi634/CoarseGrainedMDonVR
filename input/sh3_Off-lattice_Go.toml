@@ -1,3 +1,4 @@
+# SH3 Calpha model based on 1srl.pdb
 # vim:set foldmethod=marker
 [simulator]
 integrator.type = "UnderdampedLangevin"
