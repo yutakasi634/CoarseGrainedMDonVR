@@ -18,9 +18,8 @@ Supported VR platform is Oculus Rift.
 ## Input file format
 You can specify each parameter of lennard-jones system, for example, radius of a specific particle, size of the simulation box, temperature and so on, by input file based on `Toml` format.
 
-When you execute simulation from `play` button of Unity application, locate your input file as `(ProjectRoot)/input/input.toml` in Project folder.
+When you execute simulation from `play` button of Unity application, locate your input file as `(ProjectRoot)/input/input.toml` in Project folder.There is sample input file there.
 When you execute simulation by the binary file in `(ProjectRoot)/bin` folder, locate your input file as `(ProjectRoot)/bin/(ProductName)_Data/input/input.toml`.
-There are sample input file there.
 
 The detail of file format is like below. This file is a subset of [Mjolnir](https://github.com/Mjolnir-MD/Mjolnir)'s format.
 
