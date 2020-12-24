@@ -140,8 +140,9 @@ public class InitialConfGenerator : MonoBehaviour
                 List<TomlTable> local_ffs = ff.Get<List<TomlTable>>("local");
                 foreach (TomlTable local_ff in local_ffs)
                 {
-                    string potential = local_ff.Get<string>("potential");
-                    if (potential == "Harmonic")
+                    string potential   = local_ff.Get<string>("potential");
+                    string interaction = local_ff.Get<string>("interaction");
+                    if (interaction == "BondLength" && potential == "Harmonic")
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
@@ -162,7 +163,7 @@ public class InitialConfGenerator : MonoBehaviour
                         m_HarmonicBondManager.Init(v0s, ks, rigid_pairs, timescale);
                         Debug.Log("HarmonicBondManager initialization finished.");
                     }
-                    else if (potential == "GoContact")
+                    else if (interaction == "BondLength" && potential == "GoContact")
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
@@ -185,11 +186,12 @@ public class InitialConfGenerator : MonoBehaviour
                     }
                     else
                     {
-                        throw new System.Exception($@"
-                        Unknown local forcefields is specified. Available local forcefield is
-                            - Harmonic
-                            - GoContact
-                        ");
+                        Debug.LogWarning($@"
+Unknown combination of local interaction {interaction} and forcefields {potential} is specified.
+This table will be ignored.
+Available combination is
+    - Interaction: BondLength, Potential: Harmonic
+    - Interaction: BondLength, Potential: GoContact");
                     }
                 }
             }
