@@ -10,7 +10,7 @@ public class InitialConfGenerator : MonoBehaviour
     public GameObject m_GeneralParticle;
 
     private float temperature = 300.0f;
-    private float timescale = 10.0f;
+    private float timescale = 100.0f;
     private float kb = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
     private float kb_scaled;
     private NormalizedRandom m_NormalizedRandom;
