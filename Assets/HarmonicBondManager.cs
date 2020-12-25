@@ -14,19 +14,18 @@ public class HarmonicBondManager : MonoBehaviour
         enabled = false;
     }
 
-    // Update is called once per frame
     private void FixedUpdate()
     {
         for (int pair_idx = 0; pair_idx < m_RigidPairs.Count; pair_idx++)
         {
             List<Rigidbody> rigid_pair = m_RigidPairs[pair_idx];
-            Rigidbody rigid_first  = rigid_pair[0];
-            Rigidbody rigid_second = rigid_pair[1];
-            Vector3 dist_vec = rigid_second.position - rigid_first.position;
+            Rigidbody rigid_i = rigid_pair[0];
+            Rigidbody rigid_j = rigid_pair[1];
+            Vector3 dist_vec = rigid_j.position - rigid_i.position;
             Vector3 norm_vec = dist_vec.normalized;
             float   coef     = 2.0f * m_ScaledKs[pair_idx] * (dist_vec.magnitude - m_V0s[pair_idx]);
-            rigid_first.AddForce(coef * norm_vec);
-            rigid_second.AddForce(-coef * norm_vec);
+            rigid_i.AddForce( coef * norm_vec);
+            rigid_j.AddForce(-coef * norm_vec);
         }
     }
 
@@ -49,9 +48,9 @@ public class HarmonicBondManager : MonoBehaviour
         // setting ingnore collision
         foreach (List<Rigidbody> rigid_pair in m_RigidPairs)
         {
-            Collider first_collider  = rigid_pair[0].GetComponent<Collider>();
-            Collider second_collider = rigid_pair[1].GetComponent<Collider>();
-            Physics.IgnoreCollision(first_collider, second_collider);
+            Collider collider_i = rigid_pair[0].GetComponent<Collider>();
+            Collider collider_j = rigid_pair[1].GetComponent<Collider>();
+            Physics.IgnoreCollision(collider_i, collider_j);
         }
     }
 }
