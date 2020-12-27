@@ -20,6 +20,7 @@ public class InitialConfGenerator : MonoBehaviour
     private UnderdampedLangevinManager m_UnderdampedLangevinManager;
     private HarmonicBondManager        m_HarmonicBondManager;
     private GoContactManager           m_GoContactManager;
+    private HarmonicAngleManager       m_HarmonicAngleManager;
 
     private void Awake()
     {
@@ -172,17 +173,43 @@ public class InitialConfGenerator : MonoBehaviour
                         foreach (TomlTable parameter in parameters)
                         {
                             List<int> indices = parameter.Get<List<int>>("indices");
+
+                            Assert.AreEqual(indices.Count, 2,
+                                "The length of indices must be 2.");
+
                             var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
                             var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
                             rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
-                            Assert.AreEqual(indices.Count, 2,
-                                "The length of indices must be 2.");
                         }
                         m_GoContactManager = GetComponent<GoContactManager>();
                         m_GoContactManager.Init(v0s, ks, rigid_pairs, timescale);
                         Debug.Log("GoContactManager initialization finished.");
+                    }
+                    else if (interaction == "BondAngle" && potential == "Harmonic")
+                    {
+                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                        var v0s = new List<float>();
+                        var ks  = new List<float>();
+                        var rigid_triples = new List<List<Rigidbody>>();
+                        foreach (TomlTable parameter in parameters)
+                        {
+                            List<int> indices = parameter.Get<List<int>>("indices");
+
+                            Assert.AreEqual(indices.Count, 3,
+                                "The length of indices must be 3.");
+
+                            var rigid_i = general_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid_j = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid_k = general_particles[indices[2]].GetComponent<Rigidbody>();
+                            rigid_triples.Add(new List<Rigidbody>() { rigid_i, rigid_j, rigid_k });
+                            v0s.Add(parameter.Get<float>("v0"));
+                            ks.Add(parameter.Get<float>("k"));
+                        }
+                        m_HarmonicAngleManager = GetComponent<HarmonicAngleManager>();
+                        m_HarmonicAngleManager.Init(v0s, ks, rigid_triples, timescale);
+                        Debug.Log("HarmonicAngleManager initialization finished.");
                     }
                     else
                     {
@@ -191,7 +218,8 @@ Unknown combination of local interaction {interaction} and forcefields {potentia
 This table will be ignored.
 Available combination is
     - Interaction: BondLength, Potential: Harmonic
-    - Interaction: BondLength, Potential: GoContact");
+    - Interaction: BondLength, Potential: GoContact
+    - Interaction: BondAngle,  Potential: Harmonic");
                     }
                 }
             }
