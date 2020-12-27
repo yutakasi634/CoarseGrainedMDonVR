@@ -152,13 +152,15 @@ public class InitialConfGenerator : MonoBehaviour
                         foreach (TomlTable parameter in parameters)
                         {
                             List<int> indices = parameter.Get<List<int>>("indices");
+
+                            Assert.AreEqual(indices.Count, 2,
+                                "The length of indices must be 2.");
+
                             var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
                             var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
                             rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
-                            Assert.AreEqual(indices.Count, 2,
-                                "The length of indices must be 2.");
                         }
                         m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
                         m_HarmonicBondManager.Init(v0s, ks, rigid_pairs, timescale);
