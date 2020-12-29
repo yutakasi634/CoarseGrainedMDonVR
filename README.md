@@ -23,24 +23,41 @@ When you execute simulation by the binary file in `(ProjectRoot)/bin` folder, lo
 
 The detail of file format is like below. This file is a subset of [Mjolnir](https://github.com/Mjolnir-MD/Mjolnir)'s format.
 
-```toml
+```toml:input.toml
+[simulator]
+integrator.type = "UnderdampedLangevin"
+integrator.gammas = [
+{index = 0, gamma = 0.083424},
+{index = 1, gamma = 0.053108},
+# ...
+]
+
 [[systems]]
 attributes.temperature = 300.0
-boundary_shape.lower = [-5.0, -5.0, -5.0]
-boundary_shape.upper = [ 5.0,  5.0,  5.0]
 particles = [
-{m =  1.00, pos = [  0.9084463866571024, 2.667970365022592, 0.6623741650618591]}, # particle index 1
-{m =  1.00, pos = [-0.39914657537482867, 2.940257103317942, 3.5414659037905025]}, # particle index 2
-#...
+{m =  1.00, pos = [  0.9084463866571024, 2.667970365022592, 0.6623741650618591]}, # particle index 0
+{m =  1.00, pos = [-0.39914657537482867, 2.940257103317942, 3.5414659037905025]}, # particle index 1
+# ...
 ]
 
 [[forcefields]]
-[[forcefields.global]]
-potential = "LennardJones"
+[[forcefields.local]]
+interaction = "BondLength"
+potential   = "Harmonic"
 parameters = [
-{index =   0, sigma = 0.5, epsilon = 0.05},
-{index =   1, sigma = 0.5, epsilon = 0.05},
-#...
+{indices = [  0, 1], v0 = 3.822321, k = 60.0},
+{indices = [  1, 2], v0 = 3.822569, k = 60.0},
+# ...
+]
+
+# ...
+
+[[forcefields.global]]
+potential = "ExcludedVolume"
+epsilon   = 0.6
+parameters = [
+{index =   0, radius = 2.0},
+{index =   1, radius = 2.0},
+# ...
 ]
 ```
-If you don't specify the parameter for lennard-jones interaction, `radius` is set to 0.5 and `epsilon` is set to 0.05.
