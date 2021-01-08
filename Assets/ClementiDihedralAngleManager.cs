@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class CosineDihedralAngleManager : MonoBehaviour
+public class ClementiDihedralAngleManager : MonoBehaviour
 {
-    // This potential is not equal to Cosine + DihedralAngle in Mjolnir. This is 1 - cos, but 1 + cos in Mjolnir case.
     private List<float> m_Phi0s;
-    private List<float> m_NScaledK_2s; // n * k / 2
-    private List<int>   m_2Ns;
+    private List<float> m_ScaledK1_2s; //     k1 / 2
+    private List<float> m_ScaledK3_2s; // 3 * k3 / 2
     private List<List<Rigidbody>> m_RigidQuadruples;
 
     private void Awake()
@@ -41,8 +40,10 @@ public class CosineDihedralAngleManager : MonoBehaviour
 
             float cos_phi = Vector3.Dot(m, n) / (m_len * n_len);
             float phi = Mathf.Sign(Vector3.Dot(r_ji, n)) * Mathf.Acos(cos_phi);
+            float phi_diff = phi - m_Phi0s[quadruple_idx];
             float coef = 
-                -m_NScaledK_2s[quadruple_idx] * Mathf.Sin(m_2Ns[quadruple_idx] * (phi - m_Phi0s[quadruple_idx]));
+                m_ScaledK1_2s[quadruple_idx] * Mathf.Sin(2.0f * phi_diff) -
+                m_ScaledK3_2s[quadruple_idx] * Mathf.Sin(6.0f * phi_diff);
 
             Vector3 Fi =  coef * r_jk_len / (m_len * m_len) * m;
             Vector3 Fl = -coef * r_jk_len / (n_len * n_len) * n;
@@ -57,26 +58,26 @@ public class CosineDihedralAngleManager : MonoBehaviour
         }
     }
 
-    internal void Init(List<float> v0s, List<float> ks, List<int> ns,
+    internal void Init(List<float> v0s, List<float> k1s, List<float> k3s,
         List<List<Rigidbody>> rigid_quadruples, float timescale)
     {
         enabled = true;
 
         Assert.AreEqual(rigid_quadruples.Count, v0s.Count,
                 "The number of v0 should equal to that of dihedral quadruples.");
-        Assert.AreEqual(rigid_quadruples.Count, ks.Count,
+        Assert.AreEqual(rigid_quadruples.Count, k1s.Count,
                 "The number of k should equal to that of dihedral quadruples.");
-        Assert.AreEqual(rigid_quadruples.Count, ns.Count,
+        Assert.AreEqual(rigid_quadruples.Count, k3s.Count,
                 "The number of n should equal to that of dihedral quadruples.");
 
         m_Phi0s = v0s;
         m_RigidQuadruples = rigid_quadruples;
-        m_2Ns = new List<int>();
-        m_NScaledK_2s = new List<float>();
+        m_ScaledK1_2s = new List<float>();
+        m_ScaledK3_2s = new List<float>();
         for(int quadruple_idx = 0; quadruple_idx < m_RigidQuadruples.Count; quadruple_idx++)
         {
-            m_2Ns.Add(ns[quadruple_idx] * 2);
-            m_NScaledK_2s.Add(ks[quadruple_idx] * timescale * timescale * ns[quadruple_idx] * 0.5f);
+            m_ScaledK1_2s.Add(k1s[quadruple_idx] * timescale * timescale * 0.5f);
+            m_ScaledK3_2s.Add(k3s[quadruple_idx] * timescale * timescale * 0.5f);
         }
 
         // setting ignore collision
