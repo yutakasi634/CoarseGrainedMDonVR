@@ -26,7 +26,7 @@ public class ClementiDihedralAngleManager : MonoBehaviour
             Rigidbody rigid_l = rigid_quadruple[3];
 
             Vector3 r_ji = rigid_i.position - rigid_j.position;
-            Vector3 r_jk = rigid_k.position - rigid_k.position;
+            Vector3 r_jk = rigid_k.position - rigid_j.position;
             Vector3 r_kj = -r_jk;
             Vector3 r_lk = rigid_l.position - rigid_k.position;
 
