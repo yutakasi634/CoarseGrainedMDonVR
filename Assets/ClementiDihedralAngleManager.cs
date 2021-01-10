@@ -36,20 +36,20 @@ public class ClementiDihedralAngleManager : MonoBehaviour
             float n_len = n.magnitude;
 
             float r_jk_len   = r_jk.magnitude;
-            float r_jk_lensq = r_jk_len * r_jk_len;
+            float r_jk_rlensq = 1.0f / (r_jk_len * r_jk_len);
 
-            float cos_phi = Vector3.Dot(m, n) / (m_len * n_len);
+            float cos_phi = Mathf.Clamp(Vector3.Dot(m, n) / (m_len * n_len), -1.0f, 1.0f);
             float phi = Mathf.Sign(Vector3.Dot(r_ji, n)) * Mathf.Acos(cos_phi);
             float phi_diff = phi - m_Phi0s[quadruple_idx];
             float coef = 
-                m_ScaledK1_2s[quadruple_idx] * Mathf.Sin(2.0f * phi_diff) -
+                -m_ScaledK1_2s[quadruple_idx] * Mathf.Sin(2.0f * phi_diff) -
                 m_ScaledK3_2s[quadruple_idx] * Mathf.Sin(6.0f * phi_diff);
 
             Vector3 Fi =  coef * r_jk_len / (m_len * m_len) * m;
             Vector3 Fl = -coef * r_jk_len / (n_len * n_len) * n;
 
-            float coef_ijk = Vector3.Dot(r_ji, r_jk) * r_jk_lensq;
-            float coef_jkl = Vector3.Dot(r_lk, r_jk) * r_jk_lensq;
+            float coef_ijk = Vector3.Dot(r_ji, r_jk) * r_jk_rlensq;
+            float coef_jkl = Vector3.Dot(r_lk, r_jk) * r_jk_rlensq;
 
             rigid_i.AddForce(Fi);
             rigid_j.AddForce((coef_ijk - 1.0f) * Fi - coef_jkl * Fl);
