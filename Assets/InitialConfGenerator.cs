@@ -15,12 +15,13 @@ public class InitialConfGenerator : MonoBehaviour
     private float kb_scaled;
     private NormalizedRandom m_NormalizedRandom;
 
-    private SystemObserver             m_SystemObserver;
-    private ReflectingBoundaryManager  m_ReflectingBoundaryManager;
-    private UnderdampedLangevinManager m_UnderdampedLangevinManager;
-    private HarmonicBondManager        m_HarmonicBondManager;
-    private GoContactManager           m_GoContactManager;
-    private HarmonicAngleManager       m_HarmonicAngleManager;
+    private SystemObserver               m_SystemObserver;
+    private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
+    private UnderdampedLangevinManager   m_UnderdampedLangevinManager;
+    private HarmonicBondManager          m_HarmonicBondManager;
+    private GoContactManager             m_GoContactManager;
+    private HarmonicAngleManager         m_HarmonicAngleManager;
+    private ClementiDihedralAngleManager m_ClementiDihedralAngleManager;
 
     private void Awake()
     {
@@ -212,6 +213,34 @@ public class InitialConfGenerator : MonoBehaviour
                         m_HarmonicAngleManager = GetComponent<HarmonicAngleManager>();
                         m_HarmonicAngleManager.Init(v0s, ks, rigid_triples, timescale);
                         Debug.Log("HarmonicAngleManager initialization finished.");
+                    }
+                    else if (interaction == "DihedralAngle" && potential == "ClementiDihedral")
+                    {
+                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                        var v0s = new List<float>();
+                        var k1s = new List<float>();
+                        var k3s = new List<float>();
+                        var rigid_quadruples = new List<List<Rigidbody>>();
+                        foreach (TomlTable parameter in parameters)
+                        {
+                            List<int> indices = parameter.Get<List<int>>("indices");
+                            Assert.AreEqual(indices.Count, 4,
+                                    "The length of indices must be 4.");
+
+                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid3 = general_particles[indices[2]].GetComponent<Rigidbody>();
+                            var rigid4 = general_particles[indices[3]].GetComponent<Rigidbody>();
+
+                            rigid_quadruples.Add(
+                                    new List<Rigidbody>() {rigid1, rigid2, rigid3, rigid4});
+                            v0s.Add(parameter.Get<float>("v0"));
+                            k1s.Add(parameter.Get<float>("k1"));
+                            k3s.Add(parameter.Get<float>("k3"));
+                        }
+                        m_ClementiDihedralAngleManager = GetComponent<ClementiDihedralAngleManager>();
+                        m_ClementiDihedralAngleManager.Init(v0s, k1s, k3s, rigid_quadruples, timescale);
+                        Debug.Log("ClementiDihedralAngleManager initialization finished");
                     }
                     else
                     {
