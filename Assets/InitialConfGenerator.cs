@@ -75,7 +75,29 @@ public class InitialConfGenerator : MonoBehaviour
                                                  m_NormalizedRandom.Generate() * sigma,
                                                  m_NormalizedRandom.Generate() * sigma);
             }
+            var particle_material = new_particle.GetComponent<Renderer>().material;
+            particle_material.SetColor("_Color", new Color(0.3f, 0.4f, 0.6f));
             general_particles.Add(new_particle);
+        }
+
+        // set particle colors
+        int particle_num = general_particles.Count;
+        float color_step = 2.0f / (particle_num - 1);
+        List<Color> color_list = new List<Color>();
+        float color_val = 0.0f;
+        color_list.Add(new Color(1.0f, 0.0f, 0.0f));
+        foreach (GameObject gen_particle in general_particles)
+        {
+            color_val += color_step;
+            Material particle_material = gen_particle.GetComponent<Renderer>().material;
+            if (color_val < 1.0f)
+            {
+                particle_material.SetColor("_Color", new Color(1.0f, color_val, color_val));
+            }
+            else
+            {
+                particle_material.SetColor("_Color", new Color(2.0f-color_val, 2.0f-color_val, 1.0f));
+            }
         }
 
         // read boundary_shape information
