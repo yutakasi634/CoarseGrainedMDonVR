@@ -75,8 +75,6 @@ public class InitialConfGenerator : MonoBehaviour
                                                  m_NormalizedRandom.Generate() * sigma,
                                                  m_NormalizedRandom.Generate() * sigma);
             }
-            var particle_material = new_particle.GetComponent<Renderer>().material;
-            particle_material.SetColor("_Color", new Color(0.3f, 0.4f, 0.6f));
             general_particles.Add(new_particle);
         }
 
