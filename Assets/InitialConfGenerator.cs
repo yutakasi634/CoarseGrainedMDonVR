@@ -270,9 +270,10 @@ public class InitialConfGenerator : MonoBehaviour
 Unknown combination of local interaction {interaction} and forcefields {potential} is specified.
 This table will be ignored.
 Available combination is
-    - Interaction: BondLength, Potential: Harmonic
-    - Interaction: BondLength, Potential: GoContact
-    - Interaction: BondAngle,  Potential: Harmonic");
+    - Interaction: BondLength,    Potential: Harmonic
+    - Interaction: BondLength,    Potential: GoContact
+    - Interaction: BondAngle,     Potential: Harmonic
+    - Interaction: DihedralAngle, Potential: ClementiDihedral");
                     }
                 }
             }
