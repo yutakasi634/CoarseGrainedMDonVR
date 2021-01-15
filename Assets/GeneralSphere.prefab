@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3491729494767851420}
   - component: {fileID: 381384282227936715}
-  m_Layer: 9
-  m_Name: GameObject
-  m_TagString: Untagged
+  m_Layer: 12
+  m_Name: GrabbableVolume
+  m_TagString: Grabbable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 6903584608603736063}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_Children: []
   m_Father: {fileID: 8221608063214272346}
   m_RootOrder: 0
@@ -39,7 +39,7 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6903584608603736063}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 8221608063214272348}
   - component: {fileID: 8221608063214272351}
   - component: {fileID: 8467348767518545566}
-  - component: {fileID: 5181938998044137775}
+  - component: {fileID: 112979300106306122}
   m_Layer: 0
   m_Name: GeneralSphere
   m_TagString: Untagged
@@ -156,7 +156,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &5181938998044137775
+--- !u!114 &112979300106306122
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -172,5 +172,4 @@ MonoBehaviour:
   m_snapPosition: 0
   m_snapOrientation: 0
   m_snapOffset: {fileID: 0}
-  m_grabPoints:
-  - {fileID: 381384282227936715}
+  m_grabPoints: []
