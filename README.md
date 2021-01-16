@@ -3,7 +3,7 @@
 This is simple implementation of general purpose coarse-grained simulation on Virtual Reality.
 Supported VR platform is Oculus Rift.
 
-![ezgif-3-5879b79404ac](https://user-images.githubusercontent.com/15133454/102743190-482f0e00-439a-11eb-8462-18e6c7c9ba70.gif)
+![2021-1-15-OfLatticeGo](https://user-images.githubusercontent.com/15133454/104824523-c3022080-5895-11eb-93a4-0ab95d6272e0.gif)
 
 ## Requirements
 - Unity 2019.4.15f

@@ -50,7 +50,7 @@ public class InitialConfGenerator : MonoBehaviour
 
         // read particles information
         List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
-        List<GameObject> general_particles = new List<GameObject>();
+        List<GameObject> base_particles = new List<GameObject>();
         foreach (TomlTable particle_info in particles)
         {
             // initialize particle position
@@ -75,19 +75,19 @@ public class InitialConfGenerator : MonoBehaviour
                                                  m_NormalizedRandom.Generate() * sigma,
                                                  m_NormalizedRandom.Generate() * sigma);
             }
-            general_particles.Add(new_particle);
+            base_particles.Add(new_particle);
         }
 
         // set particle colors
-        int particle_num = general_particles.Count;
+        int particle_num = base_particles.Count;
         float color_step = 2.0f / (particle_num - 1);
         List<Color> color_list = new List<Color>();
         float color_val = 0.0f;
         color_list.Add(new Color(1.0f, 0.0f, 0.0f));
-        foreach (GameObject gen_particle in general_particles)
+        foreach (GameObject base_particle in base_particles)
         {
             color_val += color_step;
-            Material particle_material = gen_particle.GetComponent<Renderer>().material;
+            Material particle_material = base_particle.GetComponent<Renderer>().material;
             if (color_val < 1.0f)
             {
                 particle_material.SetColor("_Color", new Color(1.0f, color_val, color_val));
@@ -110,7 +110,7 @@ public class InitialConfGenerator : MonoBehaviour
             upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
             lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
             m_ReflectingBoundaryManager = GetComponent<ReflectingBoundaryManager>();
-            m_ReflectingBoundaryManager.Init(general_particles, upper_boundary, lower_boundary);
+            m_ReflectingBoundaryManager.Init(base_particles, upper_boundary, lower_boundary);
         }
         Debug.Log("System initialization finished.");
 
@@ -129,9 +129,9 @@ public class InitialConfGenerator : MonoBehaviour
                     {
                         if (integrator.ContainsKey("gammas"))
                         {
-                            int general_particles_num = general_particles.Count;
+                            int base_particles_num = base_particles.Count;
                             List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
-                            float[] gammas = new float[general_particles.Count];
+                            float[] gammas = new float[base_particles.Count];
                             foreach (TomlTable gamma_table in gammas_tables)
                             {
                                 // TODO: check dupulicate and lacking of declaration.
@@ -139,7 +139,7 @@ public class InitialConfGenerator : MonoBehaviour
                             }
                             m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
                             m_UnderdampedLangevinManager.Init(
-                                kb_scaled, temperature, general_particles, gammas, timescale);
+                                kb_scaled, temperature, base_particles, gammas, timescale);
                             Debug.Log("UnderdampedLangevinManager initialization finished.");
                         }
                         else
@@ -177,8 +177,8 @@ public class InitialConfGenerator : MonoBehaviour
                             Assert.AreEqual(indices.Count, 2,
                                 "The length of indices must be 2.");
 
-                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
                             rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
@@ -200,8 +200,8 @@ public class InitialConfGenerator : MonoBehaviour
                             Assert.AreEqual(indices.Count, 2,
                                 "The length of indices must be 2.");
 
-                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
                             rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
@@ -223,9 +223,9 @@ public class InitialConfGenerator : MonoBehaviour
                             Assert.AreEqual(indices.Count, 3,
                                 "The length of indices must be 3.");
 
-                            var rigid_i = general_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid_j = general_particles[indices[1]].GetComponent<Rigidbody>();
-                            var rigid_k = general_particles[indices[2]].GetComponent<Rigidbody>();
+                            var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
                             rigid_triples.Add(new List<Rigidbody>() { rigid_i, rigid_j, rigid_k });
                             v0s.Add(parameter.Get<float>("v0"));
                             ks.Add(parameter.Get<float>("k"));
@@ -247,10 +247,10 @@ public class InitialConfGenerator : MonoBehaviour
                             Assert.AreEqual(indices.Count, 4,
                                     "The length of indices must be 4.");
 
-                            var rigid1 = general_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid2 = general_particles[indices[1]].GetComponent<Rigidbody>();
-                            var rigid3 = general_particles[indices[2]].GetComponent<Rigidbody>();
-                            var rigid4 = general_particles[indices[3]].GetComponent<Rigidbody>();
+                            var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                            var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
+                            var rigid3 = base_particles[indices[2]].GetComponent<Rigidbody>();
+                            var rigid4 = base_particles[indices[3]].GetComponent<Rigidbody>();
 
                             rigid_quadruples.Add(
                                     new List<Rigidbody>() {rigid1, rigid2, rigid3, rigid4});
@@ -294,9 +294,9 @@ Available combination is
                             {
                                 max_radius = radius;
                             }
-                            GameObject general_particle = general_particles[index];
+                            GameObject base_particle = base_particles[index];
                             var ljparticle
-                                = general_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
+                                = base_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
                             ljparticle.Init(radius, parameter.Get<float>("epsilon"), timescale);
                         }
                         Debug.Log("LennardJones initialization finished.");
@@ -311,9 +311,9 @@ Available combination is
                             {
                                 max_radius = radius;
                             }
-                            GameObject general_particle = general_particles[index];
+                            GameObject base_particle = base_particles[index];
                             var exvparticle
-                                = general_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
+                                = base_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
                             exvparticle.sphere_radius = radius;
                             exvparticle.Init(radius, global_ff.Get<float>("epsilon"), timescale);
                         }
@@ -333,7 +333,7 @@ Available combination is
 
         // Initialize SystemObserver
         m_SystemObserver = GetComponent<SystemObserver>();
-        m_SystemObserver.Init(general_particles, timescale);
+        m_SystemObserver.Init(base_particles, timescale);
         Debug.Log("SystemObserver initialization finished.");
 
         // Set Floor and Player position
@@ -352,8 +352,8 @@ Available combination is
         }
         else
         {
-            Vector3 upper_edge = detect_upper_edge(general_particles);
-            Vector3 lower_edge = detect_lower_edge(general_particles);
+            Vector3 upper_edge = detect_upper_edge(base_particles);
+            Vector3 lower_edge = detect_lower_edge(base_particles);
             Vector3 pseudo_box_center      = (upper_edge + lower_edge) * 0.5f;
             Vector3 pseudo_box_length_half = (upper_edge - lower_edge) * 0.5f;
             upper_boundary = upper_edge + pseudo_box_length_half;
@@ -370,12 +370,12 @@ Available combination is
         }
     }
 
-    private Vector3 detect_upper_edge(List<GameObject> general_particles)
+    private Vector3 detect_upper_edge(List<GameObject> base_particles)
     {
         var ret_vec = new Vector3(0.0f, 0.0f, 0.0f);
-        foreach (GameObject gen_part in general_particles)
+        foreach (GameObject base_part in base_particles)
         {
-            Vector3 coord = gen_part.GetComponent<Rigidbody>().position;
+            Vector3 coord = base_part.GetComponent<Rigidbody>().position;
             for(int idx = 0; idx < 3; idx++)
             {
                 if (ret_vec[idx] < coord[idx]) { ret_vec[idx] = coord[idx]; }
@@ -384,12 +384,12 @@ Available combination is
         return ret_vec;
     }
 
-    private Vector3 detect_lower_edge(List<GameObject> general_particles)
+    private Vector3 detect_lower_edge(List<GameObject> base_particles)
     {
         var ret_vec = new Vector3(0.0f, 0.0f, 0.0f);
-        foreach (GameObject gen_part in general_particles)
+        foreach (GameObject base_part in base_particles)
         {
-            Vector3 coord = gen_part.GetComponent<Rigidbody>().position;
+            Vector3 coord = base_part.GetComponent<Rigidbody>().position;
             for (int idx = 0; idx < 3; idx++)
             {
                 if (coord[idx] < ret_vec[idx]) { ret_vec[idx] = coord[idx]; }
