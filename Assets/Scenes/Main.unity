@@ -310,7 +310,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 93417539, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
       propertyPath: timescale
-      value: 100
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 8036251953374215869, guid: ab4a06b7874f8df429fe0c02744fbb66,
         type: 3}
