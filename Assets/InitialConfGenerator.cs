@@ -18,7 +18,7 @@ public class InitialConfGenerator : MonoBehaviour
     private SystemObserver               m_SystemObserver;
     private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
     private UnderdampedLangevinManager   m_UnderdampedLangevinManager;
-    private HarmonicBondManager          m_HarmonicBondManager;
+    private BondLengthInteractionManager m_BondLengthInteractionManager;
     private GoContactManager             m_GoContactManager;
     private HarmonicAngleManager         m_HarmonicAngleManager;
     private ClementiDihedralAngleManager m_ClementiDihedralAngleManager;
@@ -164,51 +164,52 @@ public class InitialConfGenerator : MonoBehaviour
                 {
                     string potential   = local_ff.Get<string>("potential");
                     string interaction = local_ff.Get<string>("interaction");
-                    if (interaction == "BondLength" && potential == "Harmonic")
+                    if (interaction == "BondLength")
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                        var v0s = new List<float>();
-                        var ks  = new List<float>();
-                        var rigid_pairs = new List<List<Rigidbody>>();
-                        foreach (TomlTable parameter in parameters)
+                        var potentials = new List<PotentialBase>();
+                        if(potential == "Harmonic")
                         {
-                            List<int> indices = parameter.Get<List<int>>("indices");
+                            foreach (TomlTable parameter in parameters)
+                            {
+                                var v0 = parameter.Get<float>("v0");
+                                var k  = parameter.Get<float>("k");
 
-                            Assert.AreEqual(indices.Count, 2,
-                                "The length of indices must be 2.");
+                                List<int> indices = parameter.Get<List<int>>("indices");
 
-                            var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
-                            v0s.Add(parameter.Get<float>("v0"));
-                            ks.Add(parameter.Get<float>("k"));
+                                Assert.AreEqual(indices.Count, 2,
+                                    "The length of indices must be 2.");
+
+                                var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                potentials.Add(new HarmonicPotential(v0, k, {rigid1, rigid2}, timescale));
+                            }
+                            m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
+                            m_HarmonicBondManager.Init(potentials);
+                            Debug.Log("HarmonicBondManager initialization finished.");
                         }
-                        m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
-                        m_HarmonicBondManager.Init(v0s, ks, rigid_pairs, timescale);
-                        Debug.Log("HarmonicBondManager initialization finished.");
-                    }
-                    else if (interaction == "BondLength" && potential == "GoContact")
-                    {
-                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                        var v0s = new List<float>();
-                        var ks  = new List<float>();
-                        var rigid_pairs = new List<List<Rigidbody>>();
-                        foreach (TomlTable parameter in parameters)
+                        else if (potential == "GoContact")
                         {
-                            List<int> indices = parameter.Get<List<int>>("indices");
 
-                            Assert.AreEqual(indices.Count, 2,
-                                "The length of indices must be 2.");
+                            var potentials = new List<PotentialBase>();
+                            foreach (TomlTable parameter in parameters)
+                            {
+                                var v0 = parameter.Get<float>("v0");
+                                var k  = parameter.Get<float>("k");
 
-                            var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
-                            var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                            rigid_pairs.Add(new List<Rigidbody>() { rigid1, rigid2 });
-                            v0s.Add(parameter.Get<float>("v0"));
-                            ks.Add(parameter.Get<float>("k"));
+                                List<int> indices = parameter.Get<List<int>>("indices");
+
+                                Assert.AreEqual(indices.Count, 2,
+                                    "The length of indices must be 2.");
+
+                                var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                potentials.Add(new GoContactPotentail(v0, k, { rigid1, rigid2 }, timescale);
+                            }
+                            m_GoContactManager = GetComponent<GoContactManager>();
+                            m_GoContactManager.Init(potentials);
+                            Debug.Log("GoContactManager initialization finished.");
                         }
-                        m_GoContactManager = GetComponent<GoContactManager>();
-                        m_GoContactManager.Init(v0s, ks, rigid_pairs, timescale);
-                        Debug.Log("GoContactManager initialization finished.");
                     }
                     else if (interaction == "BondAngle" && potential == "Harmonic")
                     {
