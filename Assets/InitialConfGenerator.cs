@@ -182,7 +182,7 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                potentials.Add(new HarmonicPotential(v0, k, {rigid1, rigid2}, timescale));
+                                potentials.Add(new HarmonicPotential(v0, k, new List<Rigidbody>{rigid1, rigid2}, timescale));
                             }
                             m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
                             m_HarmonicBondManager.Init(potentials);
@@ -204,7 +204,7 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                potentials.Add(new GoContactPotentail(v0, k, { rigid1, rigid2 }, timescale);
+                                potentials.Add(new GoContactPotentail(v0, k, new List<Rigidbody>{ rigid1, rigid2 }, timescale));
                             }
                             m_GoContactManager = GetComponent<GoContactManager>();
                             m_GoContactManager.Init(potentials);
