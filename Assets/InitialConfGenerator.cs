@@ -19,7 +19,6 @@ public class InitialConfGenerator : MonoBehaviour
     private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
     private UnderdampedLangevinManager   m_UnderdampedLangevinManager;
     private BondLengthInteractionManager m_BondLengthInteractionManager;
-    private GoContactManager             m_GoContactManager;
     private HarmonicAngleManager         m_HarmonicAngleManager;
     private ClementiDihedralAngleManager m_ClementiDihedralAngleManager;
 
@@ -184,14 +183,12 @@ public class InitialConfGenerator : MonoBehaviour
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
                                 potentials.Add(new HarmonicPotential(v0, k, new List<Rigidbody>{rigid1, rigid2}, timescale));
                             }
-                            m_HarmonicBondManager = GetComponent<HarmonicBondManager>();
-                            m_HarmonicBondManager.Init(potentials);
-                            Debug.Log("HarmonicBondManager initialization finished.");
+                            m_BondLengthInteractionManager = GetComponent<BondLengthInteractionManager>();
+                            m_BondLengthInteractionManager.Init(potentials);
+                            Debug.Log("BondLengthInteractionManager with HarmonicPotential initialization finished.");
                         }
                         else if (potential == "GoContact")
                         {
-
-                            var potentials = new List<PotentialBase>();
                             foreach (TomlTable parameter in parameters)
                             {
                                 var v0 = parameter.Get<float>("v0");
@@ -204,11 +201,11 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                potentials.Add(new GoContactPotentail(v0, k, new List<Rigidbody>{ rigid1, rigid2 }, timescale));
+                                potentials.Add(new GoContactPotential(v0, k, new List<Rigidbody>{ rigid1, rigid2 }, timescale));
                             }
-                            m_GoContactManager = GetComponent<GoContactManager>();
-                            m_GoContactManager.Init(potentials);
-                            Debug.Log("GoContactManager initialization finished.");
+                            m_BondLengthInteractionManager = GetComponent<BondLengthInteractionManager>();
+                            m_BondLengthInteractionManager.Init(potentials);
+                            Debug.Log("BondLengthInteraction with GoContactPotential initialization finished.");
                         }
                     }
                     else if (interaction == "BondAngle" && potential == "Harmonic")
