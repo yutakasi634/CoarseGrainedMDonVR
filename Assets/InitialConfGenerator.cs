@@ -113,7 +113,6 @@ public class InitialConfGenerator : MonoBehaviour
         }
         Debug.Log("System initialization finished.");
 
-
         // read simulator information
         if (root.ContainsKey("simulator"))
         {
@@ -183,8 +182,9 @@ public class InitialConfGenerator : MonoBehaviour
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
                                 potentials.Add(new HarmonicPotential(v0, k, new List<Rigidbody>{rigid1, rigid2}, timescale));
                             }
-                            m_BondLengthInteractionManager = GetComponent<BondLengthInteractionManager>();
-                            m_BondLengthInteractionManager.Init(potentials);
+                            BondLengthInteractionManager bli_harmonic_manager
+                                = gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
+                            bli_harmonic_manager.Init(potentials);
                             Debug.Log("BondLengthInteractionManager with HarmonicPotential initialization finished.");
                         }
                         else if (potential == "GoContact")
@@ -203,8 +203,9 @@ public class InitialConfGenerator : MonoBehaviour
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
                                 potentials.Add(new GoContactPotential(v0, k, new List<Rigidbody>{ rigid1, rigid2 }, timescale));
                             }
-                            m_BondLengthInteractionManager = GetComponent<BondLengthInteractionManager>();
-                            m_BondLengthInteractionManager.Init(potentials);
+                            BondLengthInteractionManager bli_go_contact_manager
+                                =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
+                            bli_go_contact_manager.Init(potentials);
                             Debug.Log("BondLengthInteraction with GoContactPotential initialization finished.");
                         }
                     }
