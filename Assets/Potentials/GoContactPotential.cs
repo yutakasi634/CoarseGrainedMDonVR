@@ -3,19 +3,15 @@ using UnityEngine;
 
 internal class GoContactPotential : PotentialBase
 {
-    // inherited member variable from abstract class
-    // internal List<Rigidbody> m_Rigidbodies;
-
     private float m_V0;
     private float m_K;
     private float m_60ScaledK_V0;
 
-    internal GoContactPotential(float v0, float k, List<Rigidbody> rigid_bodies, float timescale)
+    internal GoContactPotential(float v0, float k, float timescale)
     {
         m_V0            = v0;
         m_K             = k;
         m_60ScaledK_V0  = 60.0f * k * timescale * timescale / v0;
-        m_Rigidbodies   = rigid_bodies;
     }
 
     internal override float potential(float r)

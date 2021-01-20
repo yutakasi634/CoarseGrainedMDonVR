@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -160,18 +161,19 @@ public class InitialConfGenerator : MonoBehaviour
                 List<TomlTable> local_ffs = ff.Get<List<TomlTable>>("local");
                 foreach (TomlTable local_ff in local_ffs)
                 {
-                    string potential   = local_ff.Get<string>("potential");
+                    string potential_str   = local_ff.Get<string>("potential");
                     string interaction = local_ff.Get<string>("interaction");
                     if (interaction == "BondLength")
                     {
-                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                        var potentials = new List<PotentialBase>();
-                        if(potential == "Harmonic")
+                        var parameters  = local_ff.Get<List<TomlTable>>("parameters");
+                        var pot_rigids_pairs = new List<Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>>();
+                        if(potential_str == "Harmonic")
                         {
                             foreach (TomlTable parameter in parameters)
                             {
                                 var v0 = parameter.Get<float>("v0");
                                 var k  = parameter.Get<float>("k");
+                                var potential = new HarmonicPotential(v0, k, timescale);
 
                                 List<int> indices = parameter.Get<List<int>>("indices");
 
@@ -180,19 +182,22 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                potentials.Add(new HarmonicPotential(v0, k, new List<Rigidbody>{rigid1, rigid2}, timescale));
+                                var rigid_pair = new Tuple<Rigidbody, Rigidbody>(rigid1, rigid2);
+
+                                pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
                             }
                             BondLengthInteractionManager bli_harmonic_manager
                                 = gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
-                            bli_harmonic_manager.Init(potentials);
+                            bli_harmonic_manager.Init(pot_rigids_pairs);
                             Debug.Log("BondLengthInteractionManager with HarmonicPotential initialization finished.");
                         }
-                        else if (potential == "GoContact")
+                        else if (potential_str == "GoContact")
                         {
                             foreach (TomlTable parameter in parameters)
                             {
                                 var v0 = parameter.Get<float>("v0");
                                 var k  = parameter.Get<float>("k");
+                                var potential = new GoContactPotential(v0, k, timescale);
 
                                 List<int> indices = parameter.Get<List<int>>("indices");
 
@@ -201,15 +206,17 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                 var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                potentials.Add(new GoContactPotential(v0, k, new List<Rigidbody>{ rigid1, rigid2 }, timescale));
+                                var rigid_pair = new Tuple<Rigidbody, Rigidbody>(rigid1, rigid2);
+
+                                pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
                             }
                             BondLengthInteractionManager bli_go_contact_manager
                                 =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
-                            bli_go_contact_manager.Init(potentials);
+                            bli_go_contact_manager.Init(pot_rigids_pairs);
                             Debug.Log("BondLengthInteraction with GoContactPotential initialization finished.");
                         }
                     }
-                    else if (interaction == "BondAngle" && potential == "Harmonic")
+                    else if (interaction == "BondAngle" && potential_str == "Harmonic")
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
@@ -233,7 +240,7 @@ public class InitialConfGenerator : MonoBehaviour
                         m_HarmonicAngleManager.Init(v0s, ks, rigid_triples, timescale);
                         Debug.Log("HarmonicAngleManager initialization finished.");
                     }
-                    else if (interaction == "DihedralAngle" && potential == "ClementiDihedral")
+                    else if (interaction == "DihedralAngle" && potential_str == "ClementiDihedral")
                     {
                         var parameters = local_ff.Get<List<TomlTable>>("parameters");
                         var v0s = new List<float>();
@@ -264,7 +271,7 @@ public class InitialConfGenerator : MonoBehaviour
                     else
                     {
                         Debug.LogWarning($@"
-Unknown combination of local interaction {interaction} and forcefields {potential} is specified.
+Unknown combination of local interaction {interaction} and forcefields {potential_str} is specified.
 This table will be ignored.
 Available combination is
     - Interaction: BondLength,    Potential: Harmonic
