@@ -1,6 +1,6 @@
-# CoarseGrainedMDonVR
+# Coral iMD VR
 
-This is simple implementation of general purpose coarse-grained simulation on Virtual Reality.
+This is simple implementation of **Co**arese-grained gene**ral** purpose **i**nteractive **M**olecular **D**ynamics simulation on **V**irtual **R**eality.
 Supported VR platform is Oculus Rift.
 
 ![2021-1-15-OfLatticeGo](https://user-images.githubusercontent.com/15133454/104824523-c3022080-5895-11eb-93a4-0ab95d6272e0.gif)
