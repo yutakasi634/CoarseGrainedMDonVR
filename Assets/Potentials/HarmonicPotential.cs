@@ -8,8 +8,8 @@ internal class HarmonicPotential : PotentialBase
 
     internal HarmonicPotential(float v0, float k, float timescale)
     {
-        m_V0          = v0;
-        m_2ScaledK     = 2.0f * k * timescale * timescale;
+        m_V0       = v0;
+        m_2ScaledK = 2.0f * k * timescale * timescale;
     }
 
     internal override float Potential(float r)
