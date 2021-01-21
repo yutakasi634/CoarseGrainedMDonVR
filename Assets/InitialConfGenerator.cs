@@ -186,10 +186,6 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
                             }
-                            BondLengthInteractionManager bli_harmonic_manager
-                                = gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
-                            bli_harmonic_manager.Init(pot_rigids_pairs);
-                            Debug.Log("BondLengthInteractionManager with HarmonicPotential initialization finished.");
                         }
                         else if (potential_str == "GoContact")
                         {
@@ -210,11 +206,12 @@ public class InitialConfGenerator : MonoBehaviour
 
                                 pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
                             }
-                            BondLengthInteractionManager bli_go_contact_manager
-                                =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
-                            bli_go_contact_manager.Init(pot_rigids_pairs);
-                            Debug.Log("BondLengthInteraction with GoContactPotential initialization finished.");
                         }
+                        BondLengthInteractionManager bli_manager
+                            =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
+                        bli_manager.Init(pot_rigids_pairs);
+                        string potential_name = bli_manager.PotentialName();
+                        Debug.Log($"BondLengthInteraction with {potential_name} initialization finished.");
                     }
                     else if (interaction == "BondAngle" && potential_str == "Harmonic")
                     {

@@ -12,15 +12,20 @@ internal class HarmonicPotential : PotentialBase
         m_2ScaledK     = 2.0f * k * timescale * timescale;
     }
 
-    internal override float potential(float r)
+    internal override float Potential(float r)
     {
         float r_v0 = r - m_V0;
         return m_2ScaledK * 0.5f * r_v0 * r_v0;
     }
 
-    internal override float derivative(float r)
+    internal override float Derivative(float r)
     {
         float r_v0 = r - m_V0;
         return m_2ScaledK * r_v0;
+    }
+
+    internal override string Name()
+    {
+        return "HarmonicPotential";
     }
 }

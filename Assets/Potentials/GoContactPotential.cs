@@ -14,7 +14,7 @@ internal class GoContactPotential : PotentialBase
         m_60ScaledK_V0  = 60.0f * k * timescale * timescale / v0;
     }
 
-    internal override float potential(float r)
+    internal override float Potential(float r)
     {
         float invr     = 1.0f / r;
         float r0invr   = m_V0     * invr;
@@ -26,7 +26,7 @@ internal class GoContactPotential : PotentialBase
         return m_K * (5.0f * r0invr12 - 6.0f * r0invr10);
     }
 
-    internal override float derivative(float r)
+    internal override float Derivative(float r)
     {
         float invr     = 1.0f / r;
         float r0invr   = m_V0     * invr;
@@ -36,5 +36,10 @@ internal class GoContactPotential : PotentialBase
         float r0invr10 = r0invr8  * r0invr2;
         float r0invr12 = r0invr10 * r0invr2;
         return m_60ScaledK_V0 * (r0invr10 - r0invr12);
+    }
+
+    internal override string Name()
+    {
+        return "GoContactPotential";
     }
 } 

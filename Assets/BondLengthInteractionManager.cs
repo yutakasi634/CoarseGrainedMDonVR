@@ -23,7 +23,7 @@ public class BondLengthInteractionManager : MonoBehaviour
             Rigidbody rigid_j = rigid_pair.Item2;
             Vector3 dist_vec = rigid_j.position - rigid_i.position;
             Vector3 norm_vec = dist_vec.normalized;
-            float   coef     = potential.derivative(dist_vec.magnitude);
+            float   coef     = potential.Derivative(dist_vec.magnitude);
             rigid_i.AddForce( coef * norm_vec);
             rigid_j.AddForce(-coef * norm_vec);
         }
@@ -43,5 +43,10 @@ public class BondLengthInteractionManager : MonoBehaviour
             Collider collider_j = rigid_pair.Item2.GetComponent<Collider>();
             Physics.IgnoreCollision(collider_i, collider_j);
         }
+    }
+
+    internal string PotentialName()
+    {
+        return m_PotentialRigidbodiesPairs[0].Item1.Name();
     }
 }
