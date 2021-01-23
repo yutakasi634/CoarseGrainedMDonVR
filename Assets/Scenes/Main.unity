@@ -300,6 +300,17 @@ PrefabInstance:
       propertyPath: timescale
       value: 400
       objectReference: {fileID: 0}
+    - target: {fileID: 5404364874941726393, guid: ab4a06b7874f8df429fe0c02744fbb66,
+        type: 3}
+      propertyPath: timescale
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 5404364874941726393, guid: ab4a06b7874f8df429fe0c02744fbb66,
+        type: 3}
+      propertyPath: m_GeneralParticle
+      value: 
+      objectReference: {fileID: 8221608063214272350, guid: 7b2653e1b49c93946866da3cf1343658,
+        type: 3}
     - target: {fileID: 8036251953374215869, guid: ab4a06b7874f8df429fe0c02744fbb66,
         type: 3}
       propertyPath: m_RootOrder
@@ -358,9 +369,10 @@ PrefabInstance:
     - target: {fileID: 8234603261816765633, guid: ab4a06b7874f8df429fe0c02744fbb66,
         type: 3}
       propertyPath: m_Name
-      value: RootObj
+      value: SceneBuilder
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 93417539, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: ab4a06b7874f8df429fe0c02744fbb66, type: 3}
 --- !u!4 &181831002 stripped
 Transform:
