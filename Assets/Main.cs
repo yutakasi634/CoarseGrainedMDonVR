@@ -9,7 +9,7 @@ using Nett;
 namespace Coral_iMD
 {
 
-    public class InitialConfGenerator : MonoBehaviour
+    public class Main : MonoBehaviour
     {
         public float timescale = 100.0f;
         public GameObject m_GeneralParticle;
