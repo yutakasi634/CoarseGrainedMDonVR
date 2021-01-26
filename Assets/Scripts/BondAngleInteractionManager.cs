@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Coral_iMD
 {
@@ -16,10 +18,10 @@ namespace Coral_iMD
 
         private void FixedUpdate()
         {
-            foreach (Tuple<PotentialBase, RigidTripletType> pot_rigids_pair in m_PotentialRigidbodiesTriplets)
+            foreach (Tuple<PotentialBase, RigidTripletType> pot_rigids_pair in m_PotentialRigidbodiesPairs)
             {
                 PotentialBase potential        = pot_rigids_pair.Item1;
-                RigidTripletType rigid_triplet = pot_rigids_triplet.Item2;
+                RigidTripletType rigid_triplet = pot_rigids_pair.Item2;
                 Rigidbody rigid_i = rigid_triplet.Item1;
                 Rigidbody rigid_j = rigid_triplet.Item2;
                 Rigidbody rigid_k = rigid_triplet.Item3;
@@ -36,7 +38,7 @@ namespace Coral_iMD
                 float coef             = potential.Derivative(theta);
 
                 Vector3 Fi = -coef * inv_sin_r_ji_len * (cos_theta * e_ji - e_jk);
-                Vector3 Fj = -coef * inv_sin_r_jk_len * (cos_theta * e_jk - e_ji);
+                Vector3 Fk = -coef * inv_sin_r_jk_len * (cos_theta * e_jk - e_ji);
 
                 rigid_i.AddForce(Fi);
                 rigid_k.AddForce(Fk);
@@ -44,16 +46,16 @@ namespace Coral_iMD
             }
         }
 
-        internal void Init(List<Tuple<PotentialBase, RigidPairType>> pot_rigids_pairs)
+        internal void Init(List<Tuple<PotentialBase, RigidTripletType>> pot_rigids_pairs)
         {
             enabled = true;
 
-            m_PotentialRigidbodiesTriplets = pot_rigids_pairs;
+            m_PotentialRigidbodiesPairs = pot_rigids_pairs;
 
             // setting ignore collision
-            foreach (Tuple<PotentialBase, RigidTripletType> pot_rigids_pair in m_PotentialRigidbodiesTriplets)
+            foreach (Tuple<PotentialBase, RigidTripletType> pot_rigids_pair in m_PotentialRigidbodiesPairs)
             {
-                RigidTripletType rigid_triplet = pot_rigids_triplet.Item2;
+                RigidTripletType rigid_triplet = pot_rigids_pair.Item2;
                 Collider collider_i = rigid_triplet.Item1.GetComponent<Collider>();
                 Collider collider_k = rigid_triplet.Item3.GetComponent<Collider>();
                 Physics.IgnoreCollision(collider_i, collider_k);
