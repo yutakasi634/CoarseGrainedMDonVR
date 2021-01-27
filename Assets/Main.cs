@@ -8,6 +8,8 @@ using Nett;
 
 namespace Coral_iMD
 {
+    using RigidPairType    = Tuple<Rigidbody, Rigidbody>;
+    using RigidTripletType = Tuple<Rigidbody, Rigidbody, Rigidbody>;
 
     public class Main : MonoBehaviour
     {
@@ -169,7 +171,7 @@ namespace Coral_iMD
                         if (interaction == "BondLength")
                         {
                             var parameters  = local_ff.Get<List<TomlTable>>("parameters");
-                            var pot_rigids_pairs = new List<Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>>();
+                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidPairType>>();
                             if(potential_str == "Harmonic")
                             {
                                 foreach (TomlTable parameter in parameters)
@@ -185,9 +187,9 @@ namespace Coral_iMD
 
                                     var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                     var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_pair = new Tuple<Rigidbody, Rigidbody>(rigid1, rigid2);
+                                    var rigid_pair = new RigidPairType(rigid1, rigid2);
 
-                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
+                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
                                 }
                             }
                             else if (potential_str == "GoContact")
@@ -205,9 +207,9 @@ namespace Coral_iMD
 
                                     var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
                                     var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_pair = new Tuple<Rigidbody, Rigidbody>(rigid1, rigid2);
+                                    var rigid_pair = new RigidPairType(rigid1, rigid2);
 
-                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, Tuple<Rigidbody, Rigidbody>>(potential, rigid_pair));
+                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
                                 }
                             }
                             BondLengthInteractionManager bli_manager
@@ -219,26 +221,33 @@ namespace Coral_iMD
                         else if (interaction == "BondAngle" && potential_str == "Harmonic")
                         {
                             var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                            var v0s = new List<float>();
-                            var ks  = new List<float>();
-                            var rigid_triples = new List<List<Rigidbody>>();
-                            foreach (TomlTable parameter in parameters)
+                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidTripletType>>();
+                            if(potential_str == "Harmonic")
                             {
-                                List<int> indices = parameter.Get<List<int>>("indices");
+                                foreach (TomlTable parameter in parameters)
+                                {
+                                    var v0 = parameter.Get<float>("v0");
+                                    var k  = parameter.Get<float>("k");
+                                    var potential = new HarmonicPotential(v0, k, timescale);
 
-                                Assert.AreEqual(indices.Count, 3,
-                                    "The length of indices must be 3.");
+                                    List<int> indices = parameter.Get<List<int>>("indices");
 
-                                var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
-                                rigid_triples.Add(new List<Rigidbody>() { rigid_i, rigid_j, rigid_k });
-                                v0s.Add(parameter.Get<float>("v0"));
-                                ks.Add(parameter.Get<float>("k"));
+                                    Assert.AreEqual(indices.Count, 3,
+                                        "The length of indices must be 3.");
+
+                                    var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                    var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                    var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
+                                    var rigid_triplets = new RigidTripletType(rigid_i, rigid_j, rigid_k);
+
+                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidTripletType>(potential, rigid_triplets));
+                                }
                             }
-                            m_HarmonicAngleManager = GetComponent<HarmonicAngleManager>();
-                            m_HarmonicAngleManager.Init(v0s, ks, rigid_triples, timescale);
-                            Debug.Log("HarmonicAngleManager initialization finished.");
+                            BondAngleInteractionManager bai_manager =
+                                gameObject.AddComponent<BondAngleInteractionManager>() as BondAngleInteractionManager;
+                            bai_manager.Init(pot_rigids_pairs);
+                            string potential_name = bai_manager.PotentialName();
+                            Debug.Log($"BondAngleInteraciton with {potential_name} initialization finished.");
                         }
                         else if (interaction == "DihedralAngle" && potential_str == "ClementiDihedral")
                         {
