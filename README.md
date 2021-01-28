@@ -14,6 +14,7 @@ Supported VR platform is Oculus Rift.
 - Configure settings following https://developer.oculus.com/documentation/unity/unity-conf-settings/ .
 - Import NuGetForUnity. The unitypackage file is [here](https://github.com/GlitchEnzo/NuGetForUnity/releases).
 - Restart Unity and accept updates.
+- Import the scene from `Project>Assets>Scenes>Main`.
 
 ## Input file format
 You can specify each parameter of lennard-jones system, for example, radius of a specific particle, size of the simulation box, temperature and so on, by input file based on `Toml` format.
