@@ -40,7 +40,7 @@ namespace Coral_iMD
 
             m_PotentialRigidbodiesPairs = pot_rigids_pairs;
 
-            // setting ingnore collision
+            // setting ignore collision
             foreach (Tuple<PotentialBase, RigidPairType> pot_rigids_pair in m_PotentialRigidbodiesPairs)
             {
                 RigidPairType rigid_pair = pot_rigids_pair.Item2;
