@@ -25,7 +25,6 @@ namespace Coral_iMD
         private SystemObserver               m_SystemObserver;
         private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
         private UnderdampedLangevinManager   m_UnderdampedLangevinManager;
-        private ClementiDihedralAngleManager m_ClementiDihedralAngleManager;
 
         private void Awake()
         {
