@@ -20,16 +20,16 @@ namespace Coral_iMD
             foreach (Tuple<PotentialBase, RigidQuadrupletType> pot_rigids_pair in m_PotentialRigidbodiesPairs)
             {
                 PotentialBase       potential  = pot_rigids_pair.Item1;
-                RigidQuadrupletType rigid_pair = pot_rigids_pair.Item2;
-                Rigidbody rigid_i = rigid_pair.Item1;
-                Rigidbody rigid_j = rigid_pair.Item2;
-                Rigidbody rigid_k = rigid_pair.Item3;
-                Rigidbody rigid_l = rigid_pair.Item4;
+                RigidQuadrupletType rigid_quadruplet = pot_rigids_pair.Item2;
+                Rigidbody rigid_i = rigid_quadruplet.Item1;
+                Rigidbody rigid_j = rigid_quadruplet.Item2;
+                Rigidbody rigid_k = rigid_quadruplet.Item3;
+                Rigidbody rigid_l = rigid_quadruplet.Item4;
 
                 Vector3 r_ji = rigid_i.position - rigid_j.position;
                 Vector3 r_jk = rigid_k.position - rigid_j.position;
                 Vector3 r_kj = -r_jk;
-                Vector3 r_lk = rigid_l.position - rigid_k.position;
+                Vector3 r_lk = rigid_k.position - rigid_l.position;
 
                 Vector3 m = Vector3.Cross(r_ji, r_jk);
                 Vector3 n = Vector3.Cross(r_jk, r_lk);

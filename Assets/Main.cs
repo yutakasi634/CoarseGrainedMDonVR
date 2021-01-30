@@ -8,8 +8,9 @@ using Nett;
 
 namespace Coral_iMD
 {
-    using RigidPairType    = Tuple<Rigidbody, Rigidbody>;
-    using RigidTripletType = Tuple<Rigidbody, Rigidbody, Rigidbody>;
+    using RigidPairType       = Tuple<Rigidbody, Rigidbody>;
+    using RigidTripletType    = Tuple<Rigidbody, Rigidbody, Rigidbody>;
+    using RigidQuadrupletType = Tuple<Rigidbody, Rigidbody, Rigidbody, Rigidbody>;
 
     public class Main : MonoBehaviour
     {
@@ -247,33 +248,38 @@ namespace Coral_iMD
                             string potential_name = bai_manager.PotentialName();
                             Debug.Log($"BondAngleInteraciton with {potential_name} initialization finished.");
                         }
-                        else if (interaction == "DihedralAngle" && potential_str == "ClementiDihedral")
+                        else if (interaction == "DihedralAngle")
                         {
-                            var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                            var v0s = new List<float>();
-                            var k1s = new List<float>();
-                            var k3s = new List<float>();
-                            var rigid_quadruples = new List<List<Rigidbody>>();
-                            foreach (TomlTable parameter in parameters)
+                            var parameters       = local_ff.Get<List<TomlTable>>("parameters");
+                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidQuadrupletType>>();
+                            if(potential_str == "ClementiDihedral")
                             {
-                                List<int> indices = parameter.Get<List<int>>("indices");
-                                Assert.AreEqual(indices.Count, 4,
-                                        "The length of indices must be 4.");
+                                foreach (TomlTable parameter in parameters)
+                                {
+                                    var v0 = parameter.Get<float>("v0");
+                                    var k1 = parameter.Get<float>("k1");
+                                    var k3 = parameter.Get<float>("k3");
+                                    var potential = new ClementiDihedralPotential(v0, k1, k3, timescale);
 
-                                var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                var rigid3 = base_particles[indices[2]].GetComponent<Rigidbody>();
-                                var rigid4 = base_particles[indices[3]].GetComponent<Rigidbody>();
+                                    List<int> indices = parameter.Get<List<int>>("indices");
+                                    Assert.AreEqual(indices.Count, 4,
+                                            "The length of indices must be 4.");
 
-                                rigid_quadruples.Add(
-                                        new List<Rigidbody>() {rigid1, rigid2, rigid3, rigid4});
-                                v0s.Add(parameter.Get<float>("v0"));
-                                k1s.Add(parameter.Get<float>("k1"));
-                                k3s.Add(parameter.Get<float>("k3"));
+                                    var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                    var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                    var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
+                                    var rigid_l = base_particles[indices[3]].GetComponent<Rigidbody>();
+                                    var rigid_quadruplet = new RigidQuadrupletType(rigid_i, rigid_j, rigid_k, rigid_l);
+
+                                    pot_rigids_pairs.Add(
+                                            new Tuple<PotentialBase, RigidQuadrupletType>(potential, rigid_quadruplet));
+                                }
                             }
-                            m_ClementiDihedralAngleManager = GetComponent<ClementiDihedralAngleManager>();
-                            m_ClementiDihedralAngleManager.Init(v0s, k1s, k3s, rigid_quadruples, timescale);
-                            Debug.Log("ClementiDihedralAngleManager initialization finished");
+                            DihedralAngleInteractionManager dai_manager =
+                                gameObject.AddComponent<DihedralAngleInteractionManager>() as DihedralAngleInteractionManager;
+                            dai_manager.Init(pot_rigids_pairs);
+                            string potential_name = dai_manager.PotentialName();
+                            Debug.Log($"DihedralAngleInteraction with {potential_name} initialization finished");
                         }
                         else
                         {
