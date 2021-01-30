@@ -216,7 +216,7 @@ namespace Coral_iMD
                             string potential_name = bli_manager.PotentialName();
                             Debug.Log($"BondLengthInteraction with {potential_name} initialization finished.");
                         }
-                        else if (interaction == "BondAngle" && potential_str == "Harmonic")
+                        else if (interaction == "BondAngle")
                         {
                             var parameters = local_ff.Get<List<TomlTable>>("parameters");
                             var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidTripletType>>();
