@@ -283,13 +283,13 @@ namespace Coral_iMD
                         else
                         {
                             Debug.LogWarning($@"
-    Unknown combination of local interaction {interaction} and forcefields {potential_str} is specified.
-    This table will be ignored.
-    Available combination is
-        - Interaction: BondLength,    Potential: Harmonic
-        - Interaction: BondLength,    Potential: GoContact
-        - Interaction: BondAngle,     Potential: Harmonic
-        - Interaction: DihedralAngle, Potential: ClementiDihedral");
+Unknown combination of local interaction {interaction} and forcefields {potential_str} is specified.
+This table will be ignored.
+Available combination is
+    - Interaction: BondLength,    Potential: Harmonic
+    - Interaction: BondLength,    Potential: GoContact
+    - Interaction: BondAngle,     Potential: Harmonic
+    - Interaction: DihedralAngle, Potential: ClementiDihedral");
                         }
                     }
                 }
