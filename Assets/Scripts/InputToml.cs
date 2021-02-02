@@ -20,5 +20,15 @@ namespace Coral_iMD
             }
             m_SystemTable = systems[0];
         }
+
+        TomlTable SimulatorTable()
+        {
+            if(m_SystemTable.ContainsKey("simulator"))
+            {
+                return m_SystemTable.Get<TomlTable>("simulator");
+            }
+            throw new System.Exception(
+                    "Input file doesn't include simulator table.");
+        }
     }
 }
