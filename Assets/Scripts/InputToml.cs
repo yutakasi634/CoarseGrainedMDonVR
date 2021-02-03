@@ -30,5 +30,15 @@ namespace Coral_iMD
             throw new System.Exception(
                     "Input file doesn't include simulator table.");
         }
+
+        List<TomlTable> ForcefieldTables()
+        {
+            if(m_SystemTable.ContainsKey("forcefields"))
+            {
+                return m_SystemTable.Get<List<TomlTable>>("forcefields");
+            }
+            throw new System.Exception(
+                    "Input file doesn't include forcefields table.");
+        }
     }
 }
