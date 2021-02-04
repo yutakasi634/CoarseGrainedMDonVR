@@ -24,7 +24,6 @@ namespace Coral_iMD
 
         private SystemObserver               m_SystemObserver;
         private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
-        private UnderdampedLangevinManager   m_UnderdampedLangevinManager;
 
         private void Awake()
         {
@@ -130,8 +129,9 @@ namespace Coral_iMD
                                 // TODO: check dupulicate and lacking of declaration.
                                 gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
                             }
-                            m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
-                            m_UnderdampedLangevinManager.Init(
+                            UnderdampedLangevinManager ul_manager
+                                = gameObject.AddComponent<UnderdampedLangevinManager>() as UnderdampedLangevinManager;
+                            ul_manager.Init(
                                 kb_scaled, temperature, base_particles, gammas, timescale);
                             Debug.Log("UnderdampedLangevinManager initialization finished.");
                         }

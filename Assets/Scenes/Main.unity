@@ -929,24 +929,6 @@ Animator:
     type: 3}
   m_PrefabInstance: {fileID: 731031716}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1805220167 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8234603261816765633, guid: 9d51339cff29a534ca744aea7389b187,
-    type: 3}
-  m_PrefabInstance: {fileID: 2138285655}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1805220174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1805220167}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00e9599671e2a114c9eca6ecee5cab3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!136 &1992184661 stripped
 CapsuleCollider:
   m_CorrespondingSourceObject: {fileID: 13623232, guid: ba1fa4a8c66106b4988c88fe4b8e8502,
@@ -1408,10 +1390,5 @@ PrefabInstance:
       propertyPath: m_Name
       value: SceneBuilder
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 93417538, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
-    - {fileID: 162132385, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
-    - {fileID: 162132390, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
-    - {fileID: 6176203051300271457, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
-    - {fileID: 7054102996193180319, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d51339cff29a534ca744aea7389b187, type: 3}
