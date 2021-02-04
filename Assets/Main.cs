@@ -38,17 +38,10 @@ namespace Coral_iMD
             // read input file
             string input_file_path = Application.dataPath + "/../input/input.toml";
             Debug.Log($"input file path is {input_file_path}.");
-            TomlTable root = Toml.ReadFile(input_file_path);
+            InputToml input = new InputToml(input_file_path);
 
             // generate initial particle position, velocity and system temperature
-            List<TomlTable> systems = root.Get<List<TomlTable>>("systems");
-            if (2 <= systems.Count)
-            {
-                throw new System.Exception(
-                    $"There are {systems.Count} systems. the multiple systems case is not supported.");
-            }
-
-            TomlTable system = systems[0];
+            TomlTable system = input.SystemTable;
             temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
 
             // read particles information
@@ -118,171 +111,166 @@ namespace Coral_iMD
             Debug.Log("System initialization finished.");
 
             // read simulator information
-            if (root.ContainsKey("simulator"))
+            TomlTable simulator = input.SimulatorTable;
+            if (simulator.ContainsKey("integrator"))
             {
-                TomlTable simulator = root.Get<TomlTable>("simulator");
-                if (simulator.ContainsKey("integrator"))
+                TomlTable integrator = simulator.Get<TomlTable>("integrator");
+                if (integrator.ContainsKey("type"))
                 {
-                    TomlTable integrator = simulator.Get<TomlTable>("integrator");
-                    if (integrator.ContainsKey("type"))
+                    string integrator_type = integrator.Get<string>("type");
+                    if (integrator_type == "UnderdampedLangevin")
                     {
-                        string integrator_type = integrator.Get<string>("type");
-                        if (integrator_type == "UnderdampedLangevin")
+                        if (integrator.ContainsKey("gammas"))
                         {
-                            if (integrator.ContainsKey("gammas"))
+                            int base_particles_num = base_particles.Count;
+                            List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
+                            float[] gammas = new float[base_particles.Count];
+                            foreach (TomlTable gamma_table in gammas_tables)
                             {
-                                int base_particles_num = base_particles.Count;
-                                List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
-                                float[] gammas = new float[base_particles.Count];
-                                foreach (TomlTable gamma_table in gammas_tables)
-                                {
-                                    // TODO: check dupulicate and lacking of declaration.
-                                    gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
-                                }
-                                m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
-                                m_UnderdampedLangevinManager.Init(
-                                    kb_scaled, temperature, base_particles, gammas, timescale);
-                                Debug.Log("UnderdampedLangevinManager initialization finished.");
+                                // TODO: check dupulicate and lacking of declaration.
+                                gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
                             }
-                            else
-                            {
-                                throw new System.Exception(
-                                    "When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
-                            }
+                            m_UnderdampedLangevinManager = GetComponent<UnderdampedLangevinManager>();
+                            m_UnderdampedLangevinManager.Init(
+                                kb_scaled, temperature, base_particles, gammas, timescale);
+                            Debug.Log("UnderdampedLangevinManager initialization finished.");
+                        }
+                        else
+                        {
+                            throw new System.Exception(
+                                "When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
                         }
                     }
                 }
             }
 
             // read forcefields information
-            List<TomlTable> ffs = root.Get<List<TomlTable>>("forcefields");
             float max_radius = 0.0f;
-            foreach (TomlTable ff in ffs)
+            TomlTable ff = input.ForceFieldTable;
+            if (ff.ContainsKey("local"))
             {
-                if (ff.ContainsKey("local"))
+                List<TomlTable> local_ffs = ff.Get<List<TomlTable>>("local");
+                foreach (TomlTable local_ff in local_ffs)
                 {
-                    List<TomlTable> local_ffs = ff.Get<List<TomlTable>>("local");
-                    foreach (TomlTable local_ff in local_ffs)
+                    string potential_str   = local_ff.Get<string>("potential");
+                    string interaction = local_ff.Get<string>("interaction");
+                    if (interaction == "BondLength")
                     {
-                        string potential_str   = local_ff.Get<string>("potential");
-                        string interaction = local_ff.Get<string>("interaction");
-                        if (interaction == "BondLength")
+                        var parameters  = local_ff.Get<List<TomlTable>>("parameters");
+                        var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidPairType>>();
+                        if(potential_str == "Harmonic")
                         {
-                            var parameters  = local_ff.Get<List<TomlTable>>("parameters");
-                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidPairType>>();
-                            if(potential_str == "Harmonic")
+                            foreach (TomlTable parameter in parameters)
                             {
-                                foreach (TomlTable parameter in parameters)
-                                {
-                                    var v0 = parameter.Get<float>("v0");
-                                    var k  = parameter.Get<float>("k");
-                                    var potential = new HarmonicPotential(v0, k, timescale);
+                                var v0 = parameter.Get<float>("v0");
+                                var k  = parameter.Get<float>("k");
+                                var potential = new HarmonicPotential(v0, k, timescale);
 
-                                    List<int> indices = parameter.Get<List<int>>("indices");
+                                List<int> indices = parameter.Get<List<int>>("indices");
 
-                                    Assert.AreEqual(indices.Count, 2,
-                                        "The length of indices must be 2.");
+                                Assert.AreEqual(indices.Count, 2,
+                                    "The length of indices must be 2.");
 
-                                    var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                    var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_pair = new RigidPairType(rigid1, rigid2);
+                                var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                var rigid_pair = new RigidPairType(rigid1, rigid2);
 
-                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
-                                }
+                                pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
                             }
-                            else if (potential_str == "GoContact")
-                            {
-                                foreach (TomlTable parameter in parameters)
-                                {
-                                    var v0 = parameter.Get<float>("v0");
-                                    var k  = parameter.Get<float>("k");
-                                    var potential = new GoContactPotential(v0, k, timescale);
-
-                                    List<int> indices = parameter.Get<List<int>>("indices");
-
-                                    Assert.AreEqual(indices.Count, 2,
-                                        "The length of indices must be 2.");
-
-                                    var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                    var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_pair = new RigidPairType(rigid1, rigid2);
-
-                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
-                                }
-                            }
-                            BondLengthInteractionManager bli_manager
-                                =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
-                            bli_manager.Init(pot_rigids_pairs);
-                            string potential_name = bli_manager.PotentialName();
-                            Debug.Log($"BondLengthInteraction with {potential_name} initialization finished.");
                         }
-                        else if (interaction == "BondAngle")
+                        else if (potential_str == "GoContact")
                         {
-                            var parameters = local_ff.Get<List<TomlTable>>("parameters");
-                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidTripletType>>();
-                            if(potential_str == "Harmonic")
+                            foreach (TomlTable parameter in parameters)
                             {
-                                foreach (TomlTable parameter in parameters)
-                                {
-                                    var v0 = parameter.Get<float>("v0");
-                                    var k  = parameter.Get<float>("k");
-                                    var potential = new HarmonicPotential(v0, k, timescale);
+                                var v0 = parameter.Get<float>("v0");
+                                var k  = parameter.Get<float>("k");
+                                var potential = new GoContactPotential(v0, k, timescale);
 
-                                    List<int> indices = parameter.Get<List<int>>("indices");
+                                List<int> indices = parameter.Get<List<int>>("indices");
 
-                                    Assert.AreEqual(indices.Count, 3,
-                                        "The length of indices must be 3.");
+                                Assert.AreEqual(indices.Count, 2,
+                                    "The length of indices must be 2.");
 
-                                    var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                    var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
-                                    var rigid_triplets = new RigidTripletType(rigid_i, rigid_j, rigid_k);
+                                var rigid1 = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid2 = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                var rigid_pair = new RigidPairType(rigid1, rigid2);
 
-                                    pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidTripletType>(potential, rigid_triplets));
-                                }
+                                pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidPairType>(potential, rigid_pair));
                             }
-                            BondAngleInteractionManager bai_manager =
-                                gameObject.AddComponent<BondAngleInteractionManager>() as BondAngleInteractionManager;
-                            bai_manager.Init(pot_rigids_pairs);
-                            string potential_name = bai_manager.PotentialName();
-                            Debug.Log($"BondAngleInteraciton with {potential_name} initialization finished.");
                         }
-                        else if (interaction == "DihedralAngle")
+                        BondLengthInteractionManager bli_manager
+                            =  gameObject.AddComponent<BondLengthInteractionManager>() as BondLengthInteractionManager;
+                        bli_manager.Init(pot_rigids_pairs);
+                        string potential_name = bli_manager.PotentialName();
+                        Debug.Log($"BondLengthInteraction with {potential_name} initialization finished.");
+                    }
+                    else if (interaction == "BondAngle")
+                    {
+                        var parameters = local_ff.Get<List<TomlTable>>("parameters");
+                        var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidTripletType>>();
+                        if(potential_str == "Harmonic")
                         {
-                            var parameters       = local_ff.Get<List<TomlTable>>("parameters");
-                            var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidQuadrupletType>>();
-                            if(potential_str == "ClementiDihedral")
+                            foreach (TomlTable parameter in parameters)
                             {
-                                foreach (TomlTable parameter in parameters)
-                                {
-                                    var v0 = parameter.Get<float>("v0");
-                                    var k1 = parameter.Get<float>("k1");
-                                    var k3 = parameter.Get<float>("k3");
-                                    var potential = new ClementiDihedralPotential(v0, k1, k3, timescale);
+                                var v0 = parameter.Get<float>("v0");
+                                var k  = parameter.Get<float>("k");
+                                var potential = new HarmonicPotential(v0, k, timescale);
 
-                                    List<int> indices = parameter.Get<List<int>>("indices");
-                                    Assert.AreEqual(indices.Count, 4,
-                                            "The length of indices must be 4.");
+                                List<int> indices = parameter.Get<List<int>>("indices");
 
-                                    var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
-                                    var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
-                                    var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
-                                    var rigid_l = base_particles[indices[3]].GetComponent<Rigidbody>();
-                                    var rigid_quadruplet = new RigidQuadrupletType(rigid_i, rigid_j, rigid_k, rigid_l);
+                                Assert.AreEqual(indices.Count, 3,
+                                    "The length of indices must be 3.");
 
-                                    pot_rigids_pairs.Add(
-                                            new Tuple<PotentialBase, RigidQuadrupletType>(potential, rigid_quadruplet));
-                                }
+                                var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
+                                var rigid_triplets = new RigidTripletType(rigid_i, rigid_j, rigid_k);
+
+                                pot_rigids_pairs.Add(new Tuple<PotentialBase, RigidTripletType>(potential, rigid_triplets));
                             }
-                            DihedralAngleInteractionManager dai_manager =
-                                gameObject.AddComponent<DihedralAngleInteractionManager>() as DihedralAngleInteractionManager;
-                            dai_manager.Init(pot_rigids_pairs);
-                            string potential_name = dai_manager.PotentialName();
-                            Debug.Log($"DihedralAngleInteraction with {potential_name} initialization finished");
                         }
-                        else
+                        BondAngleInteractionManager bai_manager =
+                            gameObject.AddComponent<BondAngleInteractionManager>() as BondAngleInteractionManager;
+                        bai_manager.Init(pot_rigids_pairs);
+                        string potential_name = bai_manager.PotentialName();
+                        Debug.Log($"BondAngleInteraciton with {potential_name} initialization finished.");
+                    }
+                    else if (interaction == "DihedralAngle")
+                    {
+                        var parameters       = local_ff.Get<List<TomlTable>>("parameters");
+                        var pot_rigids_pairs = new List<Tuple<PotentialBase, RigidQuadrupletType>>();
+                        if(potential_str == "ClementiDihedral")
                         {
-                            Debug.LogWarning($@"
+                            foreach (TomlTable parameter in parameters)
+                            {
+                                var v0 = parameter.Get<float>("v0");
+                                var k1 = parameter.Get<float>("k1");
+                                var k3 = parameter.Get<float>("k3");
+                                var potential = new ClementiDihedralPotential(v0, k1, k3, timescale);
+
+                                List<int> indices = parameter.Get<List<int>>("indices");
+                                Assert.AreEqual(indices.Count, 4,
+                                        "The length of indices must be 4.");
+
+                                var rigid_i = base_particles[indices[0]].GetComponent<Rigidbody>();
+                                var rigid_j = base_particles[indices[1]].GetComponent<Rigidbody>();
+                                var rigid_k = base_particles[indices[2]].GetComponent<Rigidbody>();
+                                var rigid_l = base_particles[indices[3]].GetComponent<Rigidbody>();
+                                var rigid_quadruplet = new RigidQuadrupletType(rigid_i, rigid_j, rigid_k, rigid_l);
+
+                                pot_rigids_pairs.Add(
+                                        new Tuple<PotentialBase, RigidQuadrupletType>(potential, rigid_quadruplet));
+                            }
+                        }
+                        DihedralAngleInteractionManager dai_manager =
+                            gameObject.AddComponent<DihedralAngleInteractionManager>() as DihedralAngleInteractionManager;
+                        dai_manager.Init(pot_rigids_pairs);
+                        string potential_name = dai_manager.PotentialName();
+                        Debug.Log($"DihedralAngleInteraction with {potential_name} initialization finished");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($@"
 Unknown combination of local interaction {interaction} and forcefields {potential_str} is specified.
 This table will be ignored.
 Available combination is
@@ -290,61 +278,60 @@ Available combination is
     - Interaction: BondLength,    Potential: GoContact
     - Interaction: BondAngle,     Potential: Harmonic
     - Interaction: DihedralAngle, Potential: ClementiDihedral");
-                        }
                     }
                 }
+            }
 
-                if (ff.ContainsKey("global"))
+            if (ff.ContainsKey("global"))
+            {
+                List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
+                foreach (TomlTable global_ff in global_ffs)
                 {
-                    List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
-                    foreach (TomlTable global_ff in global_ffs)
+                    string potential = global_ff.Get<string>("potential");
+                    List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
+                    if (potential == "LennardJones")
                     {
-                        string potential = global_ff.Get<string>("potential");
-                        List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
-                        if (potential == "LennardJones")
+                        foreach (TomlTable parameter in parameters)
                         {
-                            foreach (TomlTable parameter in parameters)
+                            int index = parameter.Get<int>("index");
+                            float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
+                            float radius = sigma * 0.5f;
+                            if (max_radius < radius)
                             {
-                                int index = parameter.Get<int>("index");
-                                float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
-                                float radius = sigma * 0.5f;
-                                if (max_radius < radius)
-                                {
-                                    max_radius = radius;
-                                }
-                                GameObject base_particle = base_particles[index];
-                                var ljparticle
-                                    = base_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
-                                ljparticle.Init(radius, parameter.Get<float>("epsilon"), timescale);
+                                max_radius = radius;
                             }
-                            Debug.Log("LennardJones initialization finished.");
+                            GameObject base_particle = base_particles[index];
+                            var ljparticle
+                                = base_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
+                            ljparticle.Init(radius, parameter.Get<float>("epsilon"), timescale);
                         }
-                        else if (potential == "ExcludedVolume")
+                        Debug.Log("LennardJones initialization finished.");
+                    }
+                    else if (potential == "ExcludedVolume")
+                    {
+                        foreach (TomlTable parameter in parameters)
                         {
-                            foreach (TomlTable parameter in parameters)
+                            int index = parameter.Get<int>("index");
+                            float radius = parameter.Get<float>("radius");
+                            if (max_radius < radius)
                             {
-                                int index = parameter.Get<int>("index");
-                                float radius = parameter.Get<float>("radius");
-                                if (max_radius < radius)
-                                {
-                                    max_radius = radius;
-                                }
-                                GameObject base_particle = base_particles[index];
-                                var exvparticle
-                                    = base_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
-                                exvparticle.sphere_radius = radius;
-                                exvparticle.Init(radius, global_ff.Get<float>("epsilon"), timescale);
+                                max_radius = radius;
                             }
-                            Debug.Log("ExcludedVolume initialization finished.");
+                            GameObject base_particle = base_particles[index];
+                            var exvparticle
+                                = base_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
+                            exvparticle.sphere_radius = radius;
+                            exvparticle.Init(radius, global_ff.Get<float>("epsilon"), timescale);
                         }
-                        else
-                        {
-                            throw new System.Exception($@"
-                            Unknown global forcefields is specified. Available global forcefield is
-                                - LennardJones
-                                - ExcludedVolume
-                            ");
-                        }
+                        Debug.Log("ExcludedVolume initialization finished.");
+                    }
+                    else
+                    {
+                        throw new System.Exception($@"
+                        Unknown global forcefields is specified. Available global forcefield is
+                            - LennardJones
+                            - ExcludedVolume
+                        ");
                     }
                 }
             }

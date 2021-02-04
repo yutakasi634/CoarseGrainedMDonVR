@@ -7,38 +7,31 @@ namespace Coral_iMD
 {
     internal class InputToml
     {
-        private TomlTable m_SystemTable;
+        internal TomlTable SimulatorTable  { get; }
+        internal TomlTable SystemTable     { get; }
+        internal TomlTable ForceFieldTable { get; }
 
         internal InputToml(string input_file_path)
         {
             TomlTable root = Toml.ReadFile(input_file_path);
+
+            SimulatorTable = root.Get<TomlTable>("simulator");
+
             List<TomlTable> systems = root.Get<List<TomlTable>>("systems");
             if (2 <= systems.Count)
             {
                 throw new System.Exception(
                         $"There are {systems.Count} systems. the multiple systems case is not supported");
             }
-            m_SystemTable = systems[0];
-        }
+            SystemTable = systems[0];
 
-        TomlTable SimulatorTable()
-        {
-            if(m_SystemTable.ContainsKey("simulator"))
+            List<TomlTable> forcefields = root.Get<List<TomlTable>>("forcefields");
+            if (2 <= forcefields.Count)
             {
-                return m_SystemTable.Get<TomlTable>("simulator");
+                throw new System.Exception(
+                        $"There are {forcefields.Count} systems. the multiple systems case is not supported");
             }
-            throw new System.Exception(
-                    "Input file doesn't include simulator table.");
-        }
-
-        List<TomlTable> ForcefieldTables()
-        {
-            if(m_SystemTable.ContainsKey("forcefields"))
-            {
-                return m_SystemTable.Get<List<TomlTable>>("forcefields");
-            }
-            throw new System.Exception(
-                    "Input file doesn't include forcefields table.");
+            ForceFieldTable = forcefields[0];
         }
     }
 }
