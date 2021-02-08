@@ -119,7 +119,6 @@ public class Main : MonoBehaviour
         }
 
         // read forcefields information
-        float max_radius = 0.0f;
         TomlTable ff = input.ForceFieldTable;
         if (ff.ContainsKey("local"))
         {
@@ -131,19 +130,15 @@ public class Main : MonoBehaviour
             List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
             foreach (TomlTable global_ff in global_ffs)
             {
-                string potential = global_ff.Get<string>("potential");
+                string potential_str = global_ff.Get<string>("potential");
                 List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
-                if (potential == "LennardJones")
+                if (potential_str == "LennardJones")
                 {
                     foreach (TomlTable parameter in parameters)
                     {
                         int index = parameter.Get<int>("index");
                         float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
                         float radius = sigma * 0.5f;
-                        if (max_radius < radius)
-                        {
-                            max_radius = radius;
-                        }
                         GameObject base_particle = base_particles[index];
                         var ljparticle
                             = base_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
@@ -151,16 +146,12 @@ public class Main : MonoBehaviour
                     }
                     Debug.Log("LennardJones initialization finished.");
                 }
-                else if (potential == "ExcludedVolume")
+                else if (potential_str == "ExcludedVolume")
                 {
                     foreach (TomlTable parameter in parameters)
                     {
                         int index = parameter.Get<int>("index");
                         float radius = parameter.Get<float>("radius");
-                        if (max_radius < radius)
-                        {
-                            max_radius = radius;
-                        }
                         GameObject base_particle = base_particles[index];
                         var exvparticle
                             = base_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
@@ -172,10 +163,11 @@ public class Main : MonoBehaviour
                 else
                 {
                     throw new System.Exception($@"
-                    Unknown global forcefields is specified. Available global forcefield is
-                        - LennardJones
-                        - ExcludedVolume
-                    ");
+Unknown combination of global forcefields {potential_str} is specified.
+This table will be ignored.
+Available combination is
+    - LennardJones
+    - ExcludedVolume ");
                 }
             }
         }
@@ -186,8 +178,19 @@ public class Main : MonoBehaviour
         Debug.Log("SystemObserver initialization finished.");
 
         // Set Floor and Player position
-        GameObject floor = GameObject.Find("Floor");
+        GameObject floor  = GameObject.Find("Floor");
         GameObject player = GameObject.Find("OVRPlayerController");
+
+        float max_radius = 0.0f;
+        foreach (GameObject base_particle in base_particles)
+        {
+            float radius = base_particle.transform.localScale.x;
+            if(max_radius < radius)
+            {
+                max_radius = radius;
+            }
+        }
+
         if (system.ContainsKey("boundary_shape"))
         {
             Vector3 box_length_half = upper_boundary - lower_boundary;
