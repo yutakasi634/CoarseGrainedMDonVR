@@ -78,8 +78,9 @@ public class Main : MonoBehaviour
             List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
             upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
             lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
-            m_ReflectingBoundaryManager = GetComponent<ReflectingBoundaryManager>();
-            m_ReflectingBoundaryManager.Init(base_particles, upper_boundary, lower_boundary);
+            ReflectingBoundaryManager rb_manager
+                = gameObject.AddComponent<ReflectingBoundaryManager>() as ReflectingBoundaryManager;
+            rb_manager.Init(base_particles, upper_boundary, lower_boundary);
         }
         Debug.Log("System initialization finished.");
 
