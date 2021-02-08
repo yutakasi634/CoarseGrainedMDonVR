@@ -37,19 +37,19 @@ namespace Coral_iMD
         }
 
         // This method generate BaseParticle in system by side effect.
-        List<GameObject> GenerateBaseParticles(GameObject base_particle, float kb_scaled)
+        internal List<GameObject> GenerateBaseParticles(GameObject base_particle, float kb_scaled)
         {
             var return_list = new List<GameObject>();
 
-            var temperature = SystemTable.Get<float>("temperature");
+            var temperature = SystemTable.Get<TomlTable>("attributes").Get<float>("temperature");
 
             List<TomlTable> particles = SystemTable.Get<List<TomlTable>>("particles");
             foreach (TomlTable particle_info in particles)
             {
-                var position = particle_info.Get<Tuple<float, float, float>>("pos");
+                var position = particle_info.Get<List<float>>("pos");
                 GameObject new_particle =
                     GameObject.Instantiate(base_particle,
-                                           new Vector3(position.Item1, position.Item2, position.Item3),
+                                           new Vector3(position[0], position[1], position[2]),
                                            base_particle.transform.rotation);
 
                 // initialize particle velocity
@@ -57,8 +57,8 @@ namespace Coral_iMD
                 new_rigid.mass = particle_info.Get<float>("m");
                 if (particle_info.ContainsKey("vel"))
                 {
-                    var velocity = particle_info.Get<Tuple<float, float, float>>("vel");
-                    new_rigid.velocity = new Vector3(velocity.Item1, velocity.Item2, velocity.Item3);
+                    var velocity = particle_info.Get<List<float>>("vel");
+                    new_rigid.velocity = new Vector3(velocity[0], velocity[1], velocity[2]);
                 }
                 else
                 {

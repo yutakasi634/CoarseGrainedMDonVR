@@ -15,7 +15,7 @@ namespace Coral_iMD
     public class Main : MonoBehaviour
     {
         public float timescale = 100.0f;
-        public GameObject m_GeneralParticle;
+        public GameObject m_BaseParticle;
 
         private float temperature = 300.0f;
         private float kb = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
@@ -44,34 +44,7 @@ namespace Coral_iMD
             temperature = system.Get<TomlTable>("attributes").Get<float>("temperature");
 
             // read particles information
-            List<TomlTable> particles = system.Get<List<TomlTable>>("particles");
-            List<GameObject> base_particles = new List<GameObject>();
-            foreach (TomlTable particle_info in particles)
-            {
-                // initialize particle position
-                float[] position = particle_info.Get<float[]>("pos");
-                GameObject new_particle =
-                    Instantiate(m_GeneralParticle,
-                                new Vector3(position[0], position[1], position[2]),
-                                transform.rotation);
-
-                // initialize particle velocity
-                Rigidbody new_rigid = new_particle.GetComponent<Rigidbody>();
-                new_rigid.mass = particle_info.Get<float>("m");
-                if (particle_info.ContainsKey("vel"))
-                {
-                    float[] velocity = particle_info.Get<float[]>("vel");
-                    new_rigid.velocity = new Vector3(velocity[0], velocity[1], velocity[2]);
-                }
-                else
-                {
-                    float sigma = Mathf.Sqrt(kb * temperature / new_rigid.mass);
-                    new_rigid.velocity = new Vector3(m_NormalizedRandom.Generate() * sigma,
-                                                     m_NormalizedRandom.Generate() * sigma,
-                                                     m_NormalizedRandom.Generate() * sigma);
-                }
-                base_particles.Add(new_particle);
-            }
+            List<GameObject> base_particles = input.GenerateBaseParticles(m_BaseParticle, kb_scaled);
 
             // set particle colors
             int particle_num = base_particles.Count;

@@ -46,7 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timescale: 100
-  m_GeneralParticle: {fileID: 0}
+  m_BaseParticle: {fileID: 8221608063214272350, guid: c0d9bc16ac67fa8489250600e115265d,
+    type: 3}
 --- !u!114 &7445427921572762673
 MonoBehaviour:
   m_ObjectHideFlags: 0

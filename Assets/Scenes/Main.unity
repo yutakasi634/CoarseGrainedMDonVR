@@ -1326,6 +1326,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5404364874941726393, guid: 9d51339cff29a534ca744aea7389b187,
         type: 3}
+      propertyPath: m_BaseParticle
+      value: 
+      objectReference: {fileID: 8221608063214272350, guid: c0d9bc16ac67fa8489250600e115265d,
+        type: 3}
+    - target: {fileID: 5404364874941726393, guid: 9d51339cff29a534ca744aea7389b187,
+        type: 3}
       propertyPath: m_GeneralParticle
       value: 
       objectReference: {fileID: 8221608063214272350, guid: c0d9bc16ac67fa8489250600e115265d,
