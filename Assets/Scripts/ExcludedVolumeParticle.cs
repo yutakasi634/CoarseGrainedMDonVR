@@ -46,7 +46,7 @@ public class ExcludedVolumeParticle : MonoBehaviour
         Assert.IsFalse(m_Rigidbody.useGravity, "ExvParticle should have false userGravity flag.");
 
         // This radius mean cutoff radius
-        m_SphereCollider.radius = 2.0f * 0.5f; // relative value to Scale of Transform
+        m_SphereCollider.radius    = 1.0f; // relative value to Scale of Transform
         m_SphereCollider.isTrigger = true;
     }
 }

@@ -127,49 +127,7 @@ public class Main : MonoBehaviour
 
         if (ff.ContainsKey("global"))
         {
-            List<TomlTable> global_ffs = ff.Get<List<TomlTable>>("global");
-            foreach (TomlTable global_ff in global_ffs)
-            {
-                string potential_str = global_ff.Get<string>("potential");
-                List<TomlTable> parameters = global_ff.Get<List<TomlTable>>("parameters");
-                if (potential_str == "LennardJones")
-                {
-                    foreach (TomlTable parameter in parameters)
-                    {
-                        int index = parameter.Get<int>("index");
-                        float sigma = parameter.Get<float>("sigma"); // sigma correspond to diameter.
-                        float radius = sigma * 0.5f;
-                        GameObject base_particle = base_particles[index];
-                        var ljparticle
-                            = base_particle.AddComponent(typeof(LennardJonesParticle)) as LennardJonesParticle;
-                        ljparticle.Init(radius, parameter.Get<float>("epsilon"), timescale);
-                    }
-                    Debug.Log("LennardJones initialization finished.");
-                }
-                else if (potential_str == "ExcludedVolume")
-                {
-                    foreach (TomlTable parameter in parameters)
-                    {
-                        int index = parameter.Get<int>("index");
-                        float radius = parameter.Get<float>("radius");
-                        GameObject base_particle = base_particles[index];
-                        var exvparticle
-                            = base_particle.AddComponent(typeof(ExcludedVolumeParticle)) as ExcludedVolumeParticle;
-                        exvparticle.sphere_radius = radius;
-                        exvparticle.Init(radius, global_ff.Get<float>("epsilon"), timescale);
-                    }
-                    Debug.Log("ExcludedVolume initialization finished.");
-                }
-                else
-                {
-                    throw new System.Exception($@"
-Unknown combination of global forcefields {potential_str} is specified.
-This table will be ignored.
-Available combination is
-    - LennardJones
-    - ExcludedVolume ");
-                }
-            }
+            input.GenerateGlobalInteractionManagers(base_particles, timescale);
         }
 
         // Initialize SystemObserver
