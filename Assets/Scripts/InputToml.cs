@@ -11,6 +11,8 @@ namespace Coral_iMD
         internal TomlTable SystemTable     { get; }
         internal TomlTable ForceFieldTable { get; }
 
+        private  NormalizedRandom Rng;
+
         internal InputToml(string input_file_path)
         {
             TomlTable root = Toml.ReadFile(input_file_path);
@@ -33,5 +35,43 @@ namespace Coral_iMD
             }
             ForceFieldTable = forcefields[0];
         }
+
+        // This method generate BaseParticle in system by side effect.
+        List<GameObject> GenerateBaseParticles(GameObject base_particle, float kb_scaled)
+        {
+            var return_list = new List<GameObject>();
+
+            var temperature = SystemTable.Get<float>("temperature");
+
+            List<TomlTable> particles = SystemTable.Get<List<TomlTable>>("particles");
+            foreach (TomlTable particle_info in particles)
+            {
+                var position = particle_info.Get<Tuple<float, float, float>>("pos");
+                GameObject new_particle =
+                    GameObject.Instantiate(base_particle,
+                                           new Vector3(position.Item1, position.Item2, position.Item3),
+                                           base_particle.transform.rotation);
+
+                // initialize particle velocity
+                Rigidbody new_rigid = new_particle.GetComponent<Rigidbody>();
+                new_rigid.mass = particle_info.Get<float>("m");
+                if (particle_info.ContainsKey("vel"))
+                {
+                    var velocity = particle_info.Get<Tuple<float, float, float>>("vel");
+                    new_rigid.velocity = new Vector3(velocity.Item1, velocity.Item2, velocity.Item3);
+                }
+                else
+                {
+                    float sigma = Mathf.Sqrt(kb_scaled * temperature / new_rigid.mass);
+                    new_rigid.velocity = new Vector3(Rng.Generate() * sigma,
+                                                     Rng.Generate() * sigma,
+                                                     Rng.Generate() * sigma);
+                }
+                return_list.Add(new_particle);
+            }
+
+            return return_list;
+        }
     }
-}
+
+} // Coral_iMD
