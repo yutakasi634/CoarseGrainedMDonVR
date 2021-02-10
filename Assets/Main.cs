@@ -47,11 +47,32 @@ public class Main : MonoBehaviour
         // read particles information
         List<GameObject> base_particles = input.GenerateBaseParticles(m_BaseParticle, kb_scaled);
 
+        // read simulator information
+        input.GenerateIntegratorManagers(gameObject, base_particles, kb_scaled, timescale);
+
+        // read forcefields information
+        TomlTable ff = input.ForceFieldTable;
+        if (ff.ContainsKey("local"))
+        {
+            input.GenerateLocalInteractionManagers(gameObject, base_particles, timescale);
+        }
+
+        if (ff.ContainsKey("global"))
+        {
+            input.GenerateGlobalInteractionManagers(base_particles, timescale);
+        }
+        Debug.Log("ForceField initialization finished.");
+
+        // Initialize SystemObserver
+        m_SystemObserver = GetComponent<SystemObserver>();
+        m_SystemObserver.Init(base_particles, timescale);
+        Debug.Log("SystemObserver initialization finished.");
+
         // set particle colors
         int particle_num = base_particles.Count;
         float color_step = 2.0f / (particle_num - 1);
         List<Color> color_list = new List<Color>();
-        float color_val = 0.0f;
+        float color_val  = 0.0f;
         color_list.Add(new Color(1.0f, 0.0f, 0.0f));
         foreach (GameObject base_particle in base_particles)
         {
@@ -83,58 +104,6 @@ public class Main : MonoBehaviour
             rb_manager.Init(base_particles, upper_boundary, lower_boundary);
         }
         Debug.Log("System initialization finished.");
-
-        // read simulator information
-        TomlTable simulator = input.SimulatorTable;
-        if (simulator.ContainsKey("integrator"))
-        {
-            TomlTable integrator = simulator.Get<TomlTable>("integrator");
-            if (integrator.ContainsKey("type"))
-            {
-                string integrator_type = integrator.Get<string>("type");
-                if (integrator_type == "UnderdampedLangevin")
-                {
-                    if (integrator.ContainsKey("gammas"))
-                    {
-                        int base_particles_num = base_particles.Count;
-                        List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
-                        float[] gammas = new float[base_particles.Count];
-                        foreach (TomlTable gamma_table in gammas_tables)
-                        {
-                            // TODO: check dupulicate and lacking of declaration.
-                            gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
-                        }
-                        UnderdampedLangevinManager ul_manager
-                            = gameObject.AddComponent<UnderdampedLangevinManager>() as UnderdampedLangevinManager;
-                        ul_manager.Init(
-                            kb_scaled, temperature, base_particles, gammas, timescale);
-                        Debug.Log("UnderdampedLangevinManager initialization finished.");
-                    }
-                    else
-                    {
-                        throw new System.Exception(
-                            "When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
-                    }
-                }
-            }
-        }
-
-        // read forcefields information
-        TomlTable ff = input.ForceFieldTable;
-        if (ff.ContainsKey("local"))
-        {
-            input.GenerateLocalInteractionManagers(gameObject, base_particles, timescale);
-        }
-
-        if (ff.ContainsKey("global"))
-        {
-            input.GenerateGlobalInteractionManagers(base_particles, timescale);
-        }
-
-        // Initialize SystemObserver
-        m_SystemObserver = GetComponent<SystemObserver>();
-        m_SystemObserver.Init(base_particles, timescale);
-        Debug.Log("SystemObserver initialization finished.");
 
         // Set Floor and Player position
         GameObject floor  = GameObject.Find("Floor");

@@ -79,6 +79,45 @@ internal class InputToml
         return return_list;
     }
 
+    // This method generate BaseParticle in system by side effect.
+    internal void GenerateIntegratorManagers(
+            GameObject scene_builder, List<GameObject> base_particles, float kb_scaled, float timescale)
+    {
+        if(SimulatorTable.ContainsKey("integrator"))
+        {
+            TomlTable integrator = SimulatorTable.Get<TomlTable>("integrator");
+            if (integrator.ContainsKey("type"))
+            {
+                string integrator_type = integrator.Get<string>("type");
+                if (integrator_type == "UnderdampedLangevin")
+                {
+                    if (integrator.ContainsKey("gammas"))
+                    {
+                        int base_particles_num = base_particles.Count;
+                        List<TomlTable> gammas_tables = integrator.Get<List<TomlTable>>("gammas");
+                        float[] gammas = new float[base_particles.Count];
+                        foreach (TomlTable gamma_table in gammas_tables)
+                        {
+                            // TODO: check dupulicate and lacking of declaration.
+                            gammas[gamma_table.Get<int>("index")] = gamma_table.Get<float>("gamma");
+                        }
+                        var temperature = SystemTable.Get<TomlTable>("attributes").Get<float>("temperature");
+
+                        UnderdampedLangevinManager ul_manager
+                            = scene_builder.AddComponent<UnderdampedLangevinManager>() as UnderdampedLangevinManager;
+                        ul_manager.Init(kb_scaled, temperature, base_particles, gammas, timescale);
+                        Debug.Log("UnderdampedLangevinManager initialization finished.");
+                    }
+                    else
+                    {
+                        throw new System.Exception(
+                            "When you use UnderdampedLangevin integrator, you must specify gammas for integrator.");
+                    }
+                }
+            }
+        }
+    }
+
     // This method generate InteractionManager for local of SceneBuilder by side effect.
     internal void GenerateLocalInteractionManagers(
             GameObject scene_builder, List<GameObject> base_particles, float timescale)
