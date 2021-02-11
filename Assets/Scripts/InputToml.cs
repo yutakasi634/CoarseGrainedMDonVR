@@ -301,7 +301,31 @@ Available combination is
     - ExcludedVolume ");
             }
         }
+    }
 
+    // This method generate BoundaryManager for local of SceneBuilder by side effect.
+    internal void GenerateBoundaryManager(GameObject scene_builder, List<GameObject> base_particles)
+    {
+        if (!SimulatorTable.ContainsKey("boundary_type")) { return; }
+
+        string boundary_type = SimulatorTable.Get<string>("boundary_type");
+        if (boundary_type == "Unlimited") { return; }
+
+        Vector3 upper_boundary = new Vector3();
+        Vector3 lower_boundary = new Vector3();
+
+        if ((boundary_type == "Periodic" || boundary_type == "PeriodicCuboid") && SystemTable.ContainsKey("boundary_shape"))
+        {
+            TomlTable boundary_shape = SystemTable.Get<TomlTable>("boundary_shape");
+            List<float> upper_bound_arr = boundary_shape.Get<List<float>>("upper");
+            List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
+            upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
+            lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
+            ReflectingBoundaryManager rb_manager
+                = scene_builder.AddComponent<ReflectingBoundaryManager>() as ReflectingBoundaryManager;
+            rb_manager.Init(base_particles, upper_boundary, lower_boundary);
+        }
+        Debug.Log("BoundaryManager initialization finished.");
     }
 }
 

@@ -50,6 +50,9 @@ public class Main : MonoBehaviour
         // read simulator information
         input.GenerateIntegratorManagers(gameObject, base_particles, kb_scaled, timescale);
 
+        // read boundary_shape information
+        input.GenerateBoundaryManager(gameObject, base_particles);
+
         // read forcefields information
         TomlTable ff = input.ForceFieldTable;
         if (ff.ContainsKey("local"))
@@ -88,39 +91,26 @@ public class Main : MonoBehaviour
             }
         }
 
-        // read boundary_shape information
-        // if there is no boundary_shape key in system table, Unlimitedboundary will be select.
-        Vector3 upper_boundary = new Vector3();
-        Vector3 lower_boundary = new Vector3();
-        if (system.ContainsKey("boundary_shape"))
-        {
-            TomlTable boundary_shape = system.Get<TomlTable>("boundary_shape");
-            List<float> upper_bound_arr = boundary_shape.Get<List<float>>("upper");
-            List<float> lower_bound_arr = boundary_shape.Get<List<float>>("lower");
-            upper_boundary = new Vector3(upper_bound_arr[0], upper_bound_arr[1], upper_bound_arr[2]);
-            lower_boundary = new Vector3(lower_bound_arr[0], lower_bound_arr[1], lower_bound_arr[2]);
-            ReflectingBoundaryManager rb_manager
-                = gameObject.AddComponent<ReflectingBoundaryManager>() as ReflectingBoundaryManager;
-            rb_manager.Init(base_particles, upper_boundary, lower_boundary);
-        }
-        Debug.Log("System initialization finished.");
 
         // Set Floor and Player position
         GameObject floor  = GameObject.Find("Floor");
         GameObject player = GameObject.Find("OVRPlayerController");
 
         float max_radius = 0.0f;
-        foreach (GameObject base_particle in base_particles)
+        if (gameObject.GetComponent<ReflectingBoundaryManager>() != null)
         {
-            float radius = base_particle.transform.localScale.x;
-            if(max_radius < radius)
+            foreach (GameObject base_particle in base_particles)
             {
-                max_radius = radius;
+                float radius = base_particle.transform.localScale.x;
+                if(max_radius < radius)
+                {
+                    max_radius = radius;
+                }
             }
-        }
 
-        if (system.ContainsKey("boundary_shape"))
-        {
+            var rb_manager =gameObject.GetComponent<ReflectingBoundaryManager>();
+            Vector3 upper_boundary = rb_manager.UpperBoundary;
+            Vector3 lower_boundary = rb_manager.LowerBoundary;
             Vector3 box_length_half = upper_boundary - lower_boundary;
             Vector3 box_center      = box_length_half + lower_boundary;
             floor.transform.position    = new Vector3(box_center.x,
@@ -136,14 +126,14 @@ public class Main : MonoBehaviour
             Vector3 lower_edge = detect_lower_edge(base_particles);
             Vector3 pseudo_box_center      = (upper_edge + lower_edge) * 0.5f;
             Vector3 pseudo_box_length_half = (upper_edge - lower_edge) * 0.5f;
-            upper_boundary = upper_edge + pseudo_box_length_half;
-            lower_boundary = lower_edge - pseudo_box_length_half;
+            Vector3 upper_boundary = upper_edge + pseudo_box_length_half;
+            Vector3 lower_boundary = lower_edge - pseudo_box_length_half;
             floor.transform.position    = new Vector3(pseudo_box_center.x,
-                                                    lower_boundary.y,
-                                                    pseudo_box_center.z);
+                                                      lower_boundary.y,
+                                                      pseudo_box_center.z);
             player.transform.position   = new Vector3(pseudo_box_center.x,
-                                                    upper_boundary.y,
-                                                    lower_boundary.z - pseudo_box_length_half.z);
+                                                      upper_boundary.y,
+                                                      lower_boundary.z - pseudo_box_length_half.z);
             player.transform.localScale = new Vector3(upper_boundary.y,
                                                       upper_boundary.y,
                                                       upper_boundary.y);
