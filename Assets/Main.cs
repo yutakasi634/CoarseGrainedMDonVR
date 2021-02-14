@@ -21,7 +21,6 @@ public class Main : MonoBehaviour
     private float temperature = 300.0f;
     private float kb = 0.0019827f; // kcal/mol,  1 tau .=. 49 fs
     private float kb_scaled;
-    private NormalizedRandom m_NormalizedRandom;
 
     private SystemObserver               m_SystemObserver;
     private ReflectingBoundaryManager    m_ReflectingBoundaryManager;
@@ -30,7 +29,6 @@ public class Main : MonoBehaviour
     {
         // initialize member variables
         kb_scaled = kb * timescale * timescale;
-        m_NormalizedRandom = new NormalizedRandom();
     }
     // Start is called before the first frame update
     void Start()
