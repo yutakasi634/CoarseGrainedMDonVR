@@ -37,11 +37,6 @@ public class CustomOVRPlayerController : MonoBehaviour
     public float BackAndSideDampen = 0.5f;
 
     /// <summary>
-    /// The force applied to the character when jumping.
-    /// </summary>
-    public float JumpForce = 0.3f;
-
-    /// <summary>
     /// The rate of rotation when using a gamepad.
     /// </summary>
     public float RotationAmount = 1.5f;
@@ -131,19 +126,19 @@ public class CustomOVRPlayerController : MonoBehaviour
     protected CharacterController Controller = null;
     protected OVRCameraRig CameraRig = null;
 
-    private float MoveScale = 1.0f;
-    private Vector3 MoveThrottle = Vector3.zero;
+    private float    MoveScale = 1.0f;
+    private Vector3  MoveThrottle = Vector3.zero;
     private OVRPose? InitialPose;
-    public float InitialYRotation { get; private set; }
-    private float MoveScaleMultiplier = 1.0f;
-    private float RotationScaleMultiplier = 1.0f;
-    private bool SkipMouseRotation = true; // It is rare to want to use mouse movement in VR, so ignore the mouse by default.
-    private bool HaltUpdateMovement = false;
-    private bool prevHatLeft = false;
-    private bool prevHatRight = false;
-    private float SimulationRate = 60f;
-    private float buttonRotation = 0f;
-    private bool ReadyToSnapTurn; // Set to true when a snap turn has occurred, code requires one frame of centered thumbstick to enable another snap turn.
+    public  float    InitialYRotation { get; private set; }
+    private float    MoveScaleMultiplier = 1.0f;
+    private float    RotationScaleMultiplier = 1.0f;
+    private bool     SkipMouseRotation = true; // It is rare to want to use mouse movement in VR, so ignore the mouse by default.
+    private bool     HaltUpdateMovement = false;
+    private bool     prevHatLeft = false;
+    private bool     prevHatRight = false;
+    private float    SimulationRate = 60f;
+    private float    buttonRotation = 0f;
+    private bool     ReadyToSnapTurn; // Set to true when a snap turn has occurred, code requires one frame of centered thumbstick to enable another snap turn.
     private bool playerControllerEnabled = false;
 
     void Start()
@@ -266,17 +261,10 @@ public class CustomOVRPlayerController : MonoBehaviour
         float motorDamp = (1.0f + (Damping * SimulationRate * Time.deltaTime));
 
         MoveThrottle.x /= motorDamp;
-        MoveThrottle.y = (MoveThrottle.y > 0.0f) ? (MoveThrottle.y / motorDamp) : MoveThrottle.y;
+        MoveThrottle.y /= motorDamp;
         MoveThrottle.z /= motorDamp;
 
         moveDirection += MoveThrottle * SimulationRate * Time.deltaTime;
-
-        if (Controller.isGrounded && MoveThrottle.y <= transform.lossyScale.y * 0.001f)
-        {
-            // Offset correction for uneven ground
-            float bumpUpOffset = Mathf.Max(Controller.stepOffset, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude);
-            moveDirection -= bumpUpOffset * Vector3.up;
-        }
 
         if (PreCharacterMove != null)
         {
@@ -284,19 +272,15 @@ public class CustomOVRPlayerController : MonoBehaviour
             Teleported = false;
         }
 
-        Vector3 predictedXZ = Vector3.Scale((Controller.transform.localPosition + moveDirection), new Vector3(1, 0, 1));
+        Vector3 predictedXYZ = Controller.transform.localPosition + moveDirection;
 
         // Move contoller
         Controller.Move(moveDirection);
-        Vector3 actualXZ = Vector3.Scale(Controller.transform.localPosition, new Vector3(1, 0, 1));
+        Vector3 actualXYZ = Controller.transform.localPosition;
 
-        if (predictedXZ != actualXZ)
-            MoveThrottle += (actualXZ - predictedXZ) / (SimulationRate * Time.deltaTime);
+        if (predictedXYZ != actualXYZ)
+            MoveThrottle += (actualXYZ - predictedXYZ) / (SimulationRate * Time.deltaTime);
     }
-
-
-
-
 
     public virtual void UpdateMovement()
     {
@@ -342,7 +326,6 @@ public class CustomOVRPlayerController : MonoBehaviour
 
             Quaternion ort = transform.rotation;
             Vector3 ortEuler = ort.eulerAngles;
-            ortEuler.z = ortEuler.x = 0f;
             ort = Quaternion.Euler(ortEuler);
 
             if (moveForward)
@@ -484,19 +467,6 @@ public class CustomOVRPlayerController : MonoBehaviour
         {
             TransformUpdated(root);
         }
-    }
-
-    /// <summary>
-    /// Jump! Must be enabled manually.
-    /// </summary>
-    public bool Jump()
-    {
-        if (!Controller.isGrounded)
-            return false;
-
-        MoveThrottle += new Vector3(0, transform.lossyScale.y * JumpForce, 0);
-
-        return true;
     }
 
     /// <summary>
