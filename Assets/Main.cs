@@ -90,8 +90,7 @@ public class Main : MonoBehaviour
         }
 
 
-        // Set Floor and Player position
-        GameObject floor  = GameObject.Find("Floor");
+        // Set Player position
         GameObject player = GameObject.Find("OVRPlayerController");
 
         float max_radius = 0.0f;
@@ -111,9 +110,6 @@ public class Main : MonoBehaviour
             Vector3 lower_boundary = rb_manager.LowerBoundary;
             Vector3 box_length_half = upper_boundary - lower_boundary;
             Vector3 box_center      = box_length_half + lower_boundary;
-            floor.transform.position    = new Vector3(box_center.x,
-                                                      lower_boundary.y - max_radius,
-                                                      box_center.z);
             player.transform.position   = new Vector3(box_center.x,
                                                       box_center.y,
                                                       lower_boundary.z - box_length_half.z);
@@ -126,9 +122,6 @@ public class Main : MonoBehaviour
             Vector3 pseudo_box_length_half = (upper_edge - lower_edge) * 0.5f;
             Vector3 upper_boundary = upper_edge + pseudo_box_length_half;
             Vector3 lower_boundary = lower_edge - pseudo_box_length_half;
-            floor.transform.position    = new Vector3(pseudo_box_center.x,
-                                                      lower_boundary.y,
-                                                      pseudo_box_center.z);
             player.transform.position   = new Vector3(pseudo_box_center.x,
                                                       upper_boundary.y,
                                                       lower_boundary.z - pseudo_box_length_half.z);
